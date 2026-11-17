@@ -924,11 +924,11 @@ function buildText(){
 function resize(){
   const cw = stage.clientWidth, ch = stage.clientHeight;
   if (cw < 2 || ch < 2) return;
-  const dpr = Math.min(window.devicePixelRatio||1, 1.25);
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
   const nw = Math.round(cw*dpr), nh = Math.round(ch*dpr);
   if (ready && nw === W && nh === H) return;
   W = nw; H = nh; cv.width = W; cv.height = H;
-  const long = 256, a = W/H;
+  const long = 400, a = W/H;
   SW = a>=1 ? long : Math.round(long*a); SH = a>=1 ? Math.round(long/a) : long;
   asp = a>=1 ? [a,1] : [1,1/a];
   sim.forEach(x => { gl.deleteTexture(x.t); gl.deleteFramebuffer(x.f); });
@@ -1001,13 +1001,10 @@ function step(A,B,str,rad){
   gl.uniform1f(u.uStr,str); gl.uniform1f(u.uRad,rad);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4); cur = 1-cur;
 }
-let lastDraw = 0;
 function frame(now){
   requestAnimationFrame(frame);
-  if (current !== 'statement' || !onScreen || document.hidden){ if (soundOn && master) master.gain.setTargetAtTime(0, ac.currentTime, .1); return; }
+  if (current !== 'statement' || !onScreen){ if (soundOn && master) master.gain.setTargetAtTime(0, ac.currentTime, .1); return; }
   if (!ready) { resize(); if (!ready) return; }
-  if (now - lastDraw < ((activity < .03 && !ptr.down && !ptr.moved && !drops.length) ? 40 : 15)) return;
-  lastDraw = now;
   const t = now/1000;
   let A=[0,0],B=[0,0],str=0,rad=.03;
   if (drops.length){ const d = drops.shift(); A=B=[d.x,d.y]; str=d.s; rad=d.r; }
