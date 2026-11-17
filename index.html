@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pond</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;}
@@ -120,6 +121,23 @@ svg.sym-ic{display:block;aspect-ratio:90/98;width:auto;overflow:visible;}
 .mm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0;}
 
 .pond-stage{min-height:min(40vh,400px);padding:clamp(28px,5vh,56px) 0;}
+#p-statement.gl{overflow:hidden;}
+#p-statement.gl .section{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);pointer-events:none;}
+.tr-stage{position:absolute;inset:0;display:none;touch-action:none;}
+#p-statement.gl .tr-stage{display:block;}
+.tr-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 1.2s ease;}
+#p-statement.on .tr-stage canvas{opacity:1;}
+.tr-hud{position:absolute;z-index:3;font-size:8.5px;letter-spacing:.22em;line-height:1.9;text-transform:uppercase;color:#F5F5F5;mix-blend-mode:difference;pointer-events:none;transition:opacity 1.2s ease;}
+.tr-tl{left:clamp(20px,4vw,60px);top:24px;}
+.tr-tr{right:clamp(20px,4vw,60px);top:24px;text-align:right;font-variant-numeric:tabular-nums;}
+.tr-bl{left:clamp(20px,4vw,60px);bottom:22px;}
+.tr-meter{display:inline-block;width:64px;height:1px;background:rgba(245,245,245,.3);vertical-align:middle;margin-left:8px;position:relative;}
+.tr-meter i{position:absolute;left:0;top:-1px;height:3px;width:0;background:#F5F5F5;}
+.tr-ctl{position:absolute;z-index:3;right:clamp(20px,4vw,60px);bottom:18px;display:flex;gap:8px;mix-blend-mode:difference;}
+.tr-btn{font:inherit;font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:#F5F5F5;background:none;border:1px solid rgba(245,245,245,.55);padding:7px 11px 6px;cursor:none;}
+.tr-btn:hover,.tr-btn:focus-visible{border-color:#F5F5F5;outline:none;}
+.tr-btn[aria-pressed="true"]{background:#F5F5F5;color:#060D0D;}
+@media(max-width:560px){.tr-bl{bottom:58px;}.tr-meter{width:40px;}}
 .stmt-copy{position:relative;z-index:2;max-width:66ch;margin:clamp(20px,3vh,36px) auto 0;text-align:left;}
 .stmt-copy p{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease;}
 .stmt-copy p.on{opacity:1;transform:none;}
@@ -351,11 +369,17 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
 </div>
 
 <div class="page" id="p-statement">
+  <div class="tr-stage" id="pond-echo">
+    <canvas id="c-stmt" aria-hidden="true"></canvas>
+    <div class="tr-hud tr-tl">NODE — 02 · Statement<br>Surface / Beneath</div>
+    <div class="tr-hud tr-tr">Tremor <span id="tr-val">0.00</span><span class="tr-meter"><i id="tr-bar"></i></span><br><span id="tr-state">Surface calm</span></div>
+    <div class="tr-hud tr-bl" id="tr-hint">Touch the surface · Hold to tremor</div>
+    <div class="tr-ctl"><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button></div>
+  </div>
   <section class="section">
     <div class="sec-inner" id="i-statement">
       <div class="eyebrow">NODE — 02 · Statement</div>
-      <div class="pond-stage" id="pond-echo">
-        <canvas id="c-stmt"></canvas>
+      <div class="pond-stage" id="pond-fallback">
         <div class="stmt">
           <div class="st stmt-q" id="stmt-q"><span class="q1">Comfort is obedience.</span><span class="q2">Trust the <span class="trem">tremor.</span></span></div>
         </div>
@@ -736,82 +760,311 @@ const ioReveal = new IntersectionObserver((es) => {
 }, {threshold:0.12});
 document.querySelectorAll('.st,.pond-stage,.wk-tile,.stmt-copy p').forEach(el => ioReveal.observe(el));
 
-/* POND ECHO — living surface behind the statement quote: breathing rings lean toward the cursor,
-   four hermetic marks orbit on dashed spokes, hover wakes a mark, click flashes it at the centre */
-const miniCanvas = document.getElementById('c-stmt');
-const miniCtx    = miniCanvas.getContext('2d');
-const MINI_META = [{icon:'triquetra',angle:0.4},{icon:'hexagonFormation',angle:2.0},{icon:'spiralingTriangles',angle:3.6},{icon:'eyeOfGod',angle:5.3}]
-  .map(m => ({...m, ang:m.angle}));
-let miniT = 0, miniMX = -9999, miniMY = -9999, miniFlash = null, miniFlashT = 0, miniNodes = [];
-function resizeMiniCanvas() {
-  const dpr = devicePixelRatio || 1;
-  const w = Math.round(miniCanvas.offsetWidth * dpr), h = Math.round(miniCanvas.offsetHeight * dpr);
-  if (miniCanvas.width !== w || miniCanvas.height !== h) { miniCanvas.width = w; miniCanvas.height = h; }
-  miniCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+/* TREMOR SURFACE — the whole Statement page is a water surface. The quote and the statement copy float on it;
+   stirring or holding breaks it open to "Trust the tremor." and the living cells beneath, and it seals back when left alone.
+   Runs only while Statement is open. Without WebGL 2 the normal HTML statement shows instead. */
+(function(){
+'use strict';
+const stage = document.getElementById('pond-echo'), cv = document.getElementById('c-stmt'), page = document.getElementById('p-statement');
+if (!stage || !cv || !page) return;
+const gl = cv.getContext('webgl2', {antialias:false, alpha:false, premultipliedAlpha:false});
+if (!gl || !(gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float'))) return;
+
+const VS = `#version 300 es
+in vec2 p; out vec2 v;
+void main(){ v = p*.5+.5; gl_Position = vec4(p,0.,1.); }`;
+
+/* water: R height, G velocity, B how disturbed this spot has been lately */
+const SIM = `#version 300 es
+precision highp float;
+in vec2 v; out vec4 o;
+uniform sampler2D uS; uniform vec2 uPx, uAsp, uA, uB;
+uniform float uStr, uRad;
+float seg(vec2 p, vec2 a, vec2 b){ vec2 pa=p-a, ba=b-a; float h = clamp(dot(pa,ba)/max(dot(ba,ba),1e-6),0.,1.); return length(pa-ba*h); }
+void main(){
+  vec4 s = texture(uS,v);
+  vec4 l = texture(uS,v-vec2(uPx.x,0.)), r = texture(uS,v+vec2(uPx.x,0.));
+  vec4 d = texture(uS,v-vec2(0.,uPx.y)), u = texture(uS,v+vec2(0.,uPx.y));
+  float h = s.r, vel = s.g;
+  vel += ((l.r+r.r+d.r+u.r)*.25 - h) * 1.25;
+  vel *= .986;
+  h = (h + vel) * .9992;
+  if (uStr != 0.) {
+    float dist = seg(v*uAsp, uA*uAsp, uB*uAsp);
+    h += exp(-dist*dist/(uRad*uRad)) * uStr;
+  }
+  float e = mix(s.b, (l.b+r.b+d.b+u.b)*.25, .22) * .9935;
+  e = max(e, clamp(abs(h)*2.6 + abs(vel)*7., 0., 1.));
+  o = vec4(h, vel, e, 1.);
+}`;
+
+const DRAW = `#version 300 es
+precision highp float;
+in vec2 v; out vec4 o;
+uniform sampler2D uS, uTA, uTB;
+uniform vec2 uPx, uAsp;
+uniform float uT;
+const vec3 PAPER = vec3(.961), INK = vec3(.0235,.051,.051);
+vec2 h2(vec2 p){ p = vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3))); return fract(sin(p)*43758.5453); }
+float h1(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
+float cells(vec2 p, float t, float e, float sc){
+  p *= sc;
+  p += .16*vec2(sin(p.y*1.7+t*.5), cos(p.x*1.9-t*.4));
+  vec2 i = floor(p), f = fract(p);
+  float d1 = 8., d2 = 8.;
+  for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++){
+    vec2 g = vec2(float(x),float(y)), q = h2(i+g);
+    vec2 c = .5 + .38*sin(t*.55 + 6.2831*q) + .07*e*sin(t*34. + 40.*q);
+    vec2 r = g + c - f; float d = dot(r,r);
+    if (d<d1){ d2=d1; d1=d; } else if (d<d2) d2=d;
+  }
+  d1 = sqrt(d1); d2 = sqrt(d2);
+  float wall = 1. - smoothstep(.012,.05, d2-d1);
+  float nuc  = 1. - smoothstep(.045,.075, d1);
+  float halo = (1. - smoothstep(.09,.2, d1)) * .22;
+  return max(max(wall*.85, nuc), halo);
 }
-(function bindMini(){
-  const stage = document.getElementById('pond-echo'); if (!stage) return;
-  const pos = e => { const r = miniCanvas.getBoundingClientRect(); miniMX = e.clientX - r.left; miniMY = e.clientY - r.top; };
-  stage.addEventListener('pointermove', pos);
-  stage.addEventListener('pointerleave', () => { miniMX = miniMY = -9999; });
-  stage.addEventListener('click', e => {
-    pos(e);
-    const hit = miniNodes.find(n => Math.hypot(miniMX - n.x, miniMY - n.y) < n.r + 10);
-    if (hit) { miniFlash = hit.icon; miniFlashT = 0; }
-  });
+void main(){
+  /* everything dies out before the stage edge, so the stage melts into the page */
+  vec2 ev = min(v, 1.-v) * uAsp;
+  float edge = smoothstep(.0, .1, min(ev.x, ev.y));
+  vec4 s = texture(uS,v);
+  float hl = texture(uS,v-vec2(uPx.x,0.)).r, hr = texture(uS,v+vec2(uPx.x,0.)).r;
+  float hd = texture(uS,v-vec2(0.,uPx.y)).r, hu = texture(uS,v+vec2(0.,uPx.y)).r;
+  vec2 n = vec2(hr-hl, hu-hd);
+  n /= (1. + length(n)*9.);
+  n *= edge;
+  float e = s.b;
+
+  float tA = texture(uTA, v + n*.16).r;
+  vec3 surf = mix(PAPER, INK, tA);
+  float lit = dot(n, vec2(-.6,.8));
+  surf += clamp(lit*2.6, -.07, .04) * (1.-tA);
+  surf += max(lit,0.)*2.*tA;
+
+  vec2 jit = (vec2(h1(v*91.+uT), h1(v*57.-uT)) - .5) * .0016 * e;
+  vec2 ub = v + n*.34 + jit;
+  float tB = texture(uTB, ub).r;
+  vec2 pc = ub*uAsp;
+  float life = cells(pc, uT, e, 7.) * .62 + cells(pc+3.7, uT*1.3, e, 17.) * .2;
+  vec3 deep = mix(INK, PAPER, max(tB, life*(1.-tB)));
+  float reveal = smoothstep(.13,.158, e + life*.07 - .02) * edge;
+
+  vec3 col = mix(surf, deep, reveal);
+  float rim = smoothstep(.06,.115,e) * (1.-reveal) * edge;
+  col = mix(col, INK, rim*.22);
+  col = mix(col, PAPER, smoothstep(.158,.17,e)*(1.-smoothstep(.17,.2,e))*.45*edge);
+  col += (h1(v*913.+fract(uT))-.5)*.014*reveal;
+  o = vec4(col,1.);
+}`;
+
+function sh(type, src){ const x = gl.createShader(type); gl.shaderSource(x,src); gl.compileShader(x);
+  if (!gl.getShaderParameter(x,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(x)); return x; }
+function prog(fs){ const p = gl.createProgram(); gl.attachShader(p,sh(gl.VERTEX_SHADER,VS)); gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));
+  gl.bindAttribLocation(p,0,'p'); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const u = {}; const n = gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);
+  for (let i=0;i<n;i++){ const a = gl.getActiveUniform(p,i); u[a.name] = gl.getUniformLocation(p,a.name); }
+  return {p,u}; }
+let pSim, pDraw;
+try { pSim = prog(SIM); pDraw = prog(DRAW); } catch(err){ console.warn('tremor:', err); return; }
+page.classList.add('gl');
+
+const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,quad);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+
+let W=0,H=0,SW=0,SH=0, asp=[1,1], sim=[], cur=0, texA=null, texB=null, ready=false;
+function mkSim(){ const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA16F,SW,SH,0,gl.RGBA,gl.HALF_FLOAT,null);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  const f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER,f);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);
+  gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT);
+  return {t,f}; }
+
+const FONT = '"Archivo Black","Pretendard","Arial Black",Arial,sans-serif';
+const PFONT = "'Pretendard','Noto Sans JP',sans-serif";
+const QA = ['COMFORT IS','OBEDIENCE.'], QB = ['TRUST THE','TREMOR.'];
+const paras = [...page.querySelectorAll('.stmt-copy p')].map(p => p.textContent.trim().replace(/\s+/g,' '));
+function wrap(x, text, maxW){
+  const out = []; let line = '';
+  for (const w of text.split(' ')){ const t = line ? line+' '+w : w;
+    if (line && x.measureText(t).width > maxW){ out.push(line); line = w; } else line = t; }
+  if (line) out.push(line); return out; }
+/* quote on top, statement copy below — sized to fit the page in one screen */
+function layout(tw, th, css){
+  const m = document.createElement('canvas').getContext('2d');
+  const vw = tw/css, portrait = tw < th*1.1;
+  const padX = Math.max(22, Math.min(100, vw*.07))*css, padY = 64*css;
+  m.font = `900 100px ${FONT}`;
+  const widest = Math.max(...QA.concat(QB).map(l => m.measureText(l).width));
+  let qs = Math.min((tw-2*padX)*(portrait ? 1 : .8)/widest*100, th*.4/1.8);
+  let p1 = Math.min(23, Math.max(17, vw*.017))*css, p2 = Math.min(17, Math.max(14, vw*.012))*css;
+  const colW = Math.min(tw-2*padX, 660*css);
+  let L;
+  for (let i=0; i<16; i++){
+    m.font = `700 ${p1}px ${PFONT}`; const l1 = wrap(m, paras[0]||'', colW);
+    m.font = `500 ${p2}px ${PFONT}`; const rest = paras.slice(1).map(t => wrap(m, t, colW));
+    const qh = qs*.9*2, gap1 = Math.max(26*css, qs*.24), lh1 = p1*1.42, lh2 = p2*1.75, gp = p2*1.4;
+    const ch = l1.length*lh1 + rest.reduce((a,l) => a + gp + l.length*lh2, 0);
+    const total = qh + gap1 + ch;
+    L = {qs, p1, p2, colW, l1, rest, qh, gap1, lh1, lh2, gp, top:(th-total)/2};
+    if (total <= th-2*padY || p2 < 10*css) break;
+    const k = Math.max(.86, Math.sqrt((th-2*padY)/total)); qs *= k; p1 *= k; p2 *= k;
+  }
+  return L; }
+function textTex(L, quote, tw, th){
+  const c = document.createElement('canvas'); c.width = tw; c.height = th;
+  const x = c.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,tw,th); x.fillStyle='#fff';
+  x.textAlign='center'; x.textBaseline='alphabetic'; x.font = `900 ${L.qs}px ${FONT}`;
+  quote.forEach((l,i) => x.fillText(l, tw/2, L.top + L.qs*.8 + i*L.qs*.9));
+  const cx = (tw-L.colW)/2; let y = L.top + L.qh + L.gap1;
+  x.textAlign='left'; x.textBaseline='top';
+  x.font = `700 ${L.p1}px ${PFONT}`; L.l1.forEach(l => { x.fillText(l, cx, y + (L.lh1-L.p1)/2); y += L.lh1; });
+  x.font = `500 ${L.p2}px ${PFONT}`; x.globalAlpha = .86;
+  L.rest.forEach(ls => { y += L.gp; ls.forEach(l => { x.fillText(l, cx, y + (L.lh2-L.p2)/2); y += L.lh2; }); });
+  const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,gl.RED,gl.UNSIGNED_BYTE,c);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  return t; }
+function buildText(){
+  const max = Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE), 2880);
+  const k = Math.min(1, max/Math.max(W,H)), tw = Math.round(W*k), th = Math.round(H*k);
+  const L = layout(tw, th, tw/stage.clientWidth);
+  if (texA) gl.deleteTexture(texA); if (texB) gl.deleteTexture(texB);
+  texA = textTex(L, QA, tw, th); texB = textTex(L, QB, tw, th); }
+
+function resize(){
+  const cw = stage.clientWidth, ch = stage.clientHeight;
+  if (cw < 2 || ch < 2) return;
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const nw = Math.round(cw*dpr), nh = Math.round(ch*dpr);
+  if (ready && nw === W && nh === H) return;
+  W = nw; H = nh; cv.width = W; cv.height = H;
+  const long = 400, a = W/H;
+  SW = a>=1 ? long : Math.round(long*a); SH = a>=1 ? Math.round(long/a) : long;
+  asp = a>=1 ? [a,1] : [1,1/a];
+  sim.forEach(x => { gl.deleteTexture(x.t); gl.deleteFramebuffer(x.f); });
+  sim = [mkSim(), mkSim()]; cur = 0;
+  buildText(); ready = true;
+}
+if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(stage);
+addEventListener('resize', resize);
+if (document.fonts && document.fonts.load)
+  Promise.all(['900 100px "Archivo Black"','700 20px Pretendard','500 20px Pretendard'].map(f => document.fonts.load(f).catch(() => {})))
+    .then(() => { if (ready) buildText(); });
+
+/* input */
+const ptr = {x:.5,y:.5,px:.5,py:.5,down:false,moved:false,in:false,downAt:0};
+const drops = []; let lastTouch = -1e9, activity = 0, touched = false;
+const hint = document.getElementById('tr-hint'), valEl = document.getElementById('tr-val'),
+      barEl = document.getElementById('tr-bar'), stateEl = document.getElementById('tr-state');
+function setPtr(ev){ const r = cv.getBoundingClientRect(); ptr.x = (ev.clientX-r.left)/r.width; ptr.y = 1 - (ev.clientY-r.top)/r.height; }
+function firstTouch(){ if (touched) return; touched = true; if (hint) hint.style.opacity = 0; }
+stage.addEventListener('pointerdown', ev => { if (ev.target.closest('.tr-ctl')) return; setPtr(ev); ptr.px=ptr.x; ptr.py=ptr.y; ptr.down = true; ptr.in = true; ptr.downAt = performance.now();
+  drops.push({x:ptr.x,y:ptr.y,s:.55,r:.035}); activity = Math.min(1, activity+.35); lastTouch = performance.now(); firstTouch(); blip(); });
+stage.addEventListener('pointermove', ev => { if (!ptr.in){ setPtr(ev); ptr.px=ptr.x; ptr.py=ptr.y; ptr.in=true; return; } setPtr(ev); ptr.moved = true; });
+const up = () => { ptr.down = false; };
+addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+stage.addEventListener('pointerleave', () => { ptr.in = false; });
+
+document.getElementById('tr-calm').addEventListener('click', () => {
+  sim.forEach(x => { gl.bindFramebuffer(gl.FRAMEBUFFER,x.f); gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); });
+  activity = 0; drops.length = 0; });
+
+/* sound — off until asked: a low drone that shakes harder as the tremor rises */
+let ac=null, master=null, lp=null, trem=null, tremGain=null, soundOn=false;
+const bSound = document.getElementById('tr-sound');
+bSound.addEventListener('click', async () => {
+  try {
+    if (!ac) {
+      ac = new (window.AudioContext||window.webkitAudioContext)();
+      master = ac.createGain(); master.gain.value = 0;
+      lp = ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 180; lp.Q.value = 6;
+      const amp = ac.createGain(); amp.gain.value = 1;
+      trem = ac.createOscillator(); trem.frequency.value = 9; tremGain = ac.createGain(); tremGain.gain.value = 0;
+      trem.connect(tremGain); tremGain.connect(amp.gain); trem.start();
+      [[55,'sawtooth',.5],[55.6,'sawtooth',.5],[82.4,'triangle',.35],[27.5,'sine',.8]].forEach(([f,t,g]) => {
+        const o = ac.createOscillator(); o.type=t; o.frequency.value=f; const gg = ac.createGain(); gg.gain.value=g; o.connect(gg); gg.connect(lp); o.start(); });
+      lp.connect(amp); amp.connect(master); master.connect(ac.destination);
+    }
+    soundOn = !soundOn; if (soundOn) await ac.resume();
+    bSound.setAttribute('aria-pressed', soundOn); bSound.textContent = soundOn ? 'Sound on' : 'Sound off';
+    if (!soundOn) master.gain.setTargetAtTime(0, ac.currentTime, .08);
+  } catch(e){ bSound.textContent = 'No sound'; }
+});
+function blip(){ if (!soundOn || !ac) return; try {
+  const o = ac.createOscillator(), g = ac.createGain(); o.type='sine';
+  o.frequency.setValueAtTime(420+Math.random()*180, ac.currentTime); o.frequency.exponentialRampToValueAtTime(90, ac.currentTime+.35);
+  g.gain.setValueAtTime(.12, ac.currentTime); g.gain.exponentialRampToValueAtTime(.0005, ac.currentTime+.45);
+  o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+.5); } catch(e){} }
+
+
+/* render only while Statement is open and the stage is on screen */
+let onScreen = false;
+new IntersectionObserver(es => es.forEach(e => { onScreen = e.isIntersecting; }), {threshold:0}).observe(stage);
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+let nextAuto = 0, hudTick = 0;
+
+function step(A,B,str,rad){
+  const src = sim[cur], dst = sim[1-cur];
+  gl.bindFramebuffer(gl.FRAMEBUFFER,dst.f); gl.viewport(0,0,SW,SH);
+  gl.useProgram(pSim.p); const u = pSim.u;
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,src.t); gl.uniform1i(u.uS,0);
+  gl.uniform2f(u.uPx,1/SW,1/SH); gl.uniform2f(u.uAsp,asp[0],asp[1]);
+  gl.uniform2f(u.uA,A[0],A[1]); gl.uniform2f(u.uB,B[0],B[1]);
+  gl.uniform1f(u.uStr,str); gl.uniform1f(u.uRad,rad);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4); cur = 1-cur;
+}
+function frame(now){
+  requestAnimationFrame(frame);
+  if (current !== 'statement' || !onScreen){ if (soundOn && master) master.gain.setTargetAtTime(0, ac.currentTime, .1); return; }
+  if (!ready) { resize(); if (!ready) return; }
+  const t = now/1000;
+  let A=[0,0],B=[0,0],str=0,rad=.03;
+  if (drops.length){ const d = drops.shift(); A=B=[d.x,d.y]; str=d.s; rad=d.r; }
+  else if (ptr.moved){
+    const dx=(ptr.x-ptr.px)*asp[0], dy=(ptr.y-ptr.py)*asp[1], sp=Math.hypot(dx,dy);
+    A=[ptr.px,ptr.py]; B=[ptr.x,ptr.y]; str=Math.min(.02+sp*2.2,.11)*(ptr.down?1.5:1); rad=ptr.down?.026:.02;
+    activity = Math.min(1, activity + sp*(ptr.down?2.4:1.2)); lastTouch = now; if (sp>.004) firstTouch();
+  } else if (ptr.down && now-ptr.downAt>140){
+    A=B=[ptr.x,ptr.y]; str=Math.sin(t*46)*.075; rad=.03; activity = Math.min(1, activity+.03); lastTouch = now;
+  }
+  ptr.px=ptr.x; ptr.py=ptr.y; ptr.moved=false;
+  if (!nextAuto) nextAuto = now + 1600;
+  if (!reduce && now>nextAuto && now-lastTouch>2600 && !drops.length){
+    drops.push({x:.2+Math.random()*.6, y:.2+Math.random()*.6, s:.34+Math.random()*.2, r:.022+Math.random()*.02});
+    nextAuto = now + 2600 + Math.random()*3200; }
+
+  step(A,B,str,rad); step(A,B,0,rad);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null); gl.viewport(0,0,W,H);
+  gl.useProgram(pDraw.p); const u = pDraw.u;
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,sim[cur].t); gl.uniform1i(u.uS,0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,texA); gl.uniform1i(u.uTA,1);
+  gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,texB); gl.uniform1i(u.uTB,2);
+  gl.uniform2f(u.uPx,1/SW,1/SH); gl.uniform2f(u.uAsp,asp[0],asp[1]); gl.uniform1f(u.uT,t);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+
+  activity *= .972;
+  if (soundOn && ac){ const c = ac.currentTime;
+    master.gain.setTargetAtTime(.035 + activity*.3, c, .12);
+    lp.frequency.setTargetAtTime(160 + activity*activity*2200, c, .1);
+    tremGain.gain.setTargetAtTime(Math.min(.85, activity*1.4), c, .1);
+    trem.frequency.setTargetAtTime(7 + activity*9, c, .2); }
+  if (++hudTick % 4 === 0){
+    valEl.textContent = activity.toFixed(2); barEl.style.width = (activity*100).toFixed(0)+'%';
+    stateEl.textContent = activity>.55 ? 'Beneath exposed' : activity>.08 ? 'Surface breaking' : 'Surface calm'; }
+}
+requestAnimationFrame(frame);
+cv.addEventListener('webglcontextlost', e => { e.preventDefault(); page.classList.remove('gl'); });
 })();
-function drawMiniPond() {
-  resizeMiniCanvas();
-  const cw = miniCanvas.offsetWidth, ch = miniCanvas.offsetHeight;
-  if (!cw || !ch) return;
-  const c = miniCtx; c.clearRect(0, 0, cw, ch);
-  const cx = cw/2, cy = ch/2, m = Math.min(cw, ch), bR = m * 0.24;
-  miniT += 0.007; const t = miniT;
-  /* faint crosshair grid, as on the first hero */
-  c.strokeStyle = 'rgba(6,13,13,0.10)'; c.lineWidth = 0.5;
-  for (let r = 0; r < 4; r++) for (let k = 0; k < 9; k++) {
-    const x = (k + 0.5) * cw / 9, y = (r + 0.5) * ch / 4, s = 5;
-    c.beginPath(); c.moveTo(x - s, y); c.lineTo(x + s, y); c.moveTo(x, y - s); c.lineTo(x, y + s); c.stroke();
-  }
-  /* breathing rings, leaning toward the pointer */
-  const px = miniMX > -999 ? (miniMX - cx) / m * 0.035 : 0, py = miniMX > -999 ? (miniMY - cy) / m * 0.035 : 0;
-  [[1,0,1.0,0.48],[2,1.2,0.72,0.34],[3,2.4,0.56,0.26],[1.5,0.8,0.88,0.38],[2.5,3.1,0.66,0.28],[4,1.7,0.46,0.22]].forEach(([f,ph,rm,lw]) => {
-    c.beginPath();
-    for (let i = 0; i <= 100; i++) {
-      const a = i/100 * Math.PI * 2;
-      const r = bR * rm * (1 + Math.sin(a*f+t+ph)*0.16 + Math.cos(a*f*1.3+t*0.7+ph)*0.1 + Math.sin(a*f*0.5+t*1.4)*0.07);
-      const x = cx + Math.cos(a)*r + px*r*0.3, y = cy + Math.sin(a)*r + py*r*0.3;
-      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
-    }
-    c.closePath(); c.strokeStyle = `rgba(6,13,13,${0.62 - lw*0.06})`; c.lineWidth = lw + 0.25; c.stroke();
-  });
-  /* orbiting marks */
-  const dist = m * 0.40; miniNodes = [];
-  MINI_META.forEach((n, i) => {
-    n.ang += 0.00035 * 2;
-    const x = cx + Math.cos(n.ang) * dist * 1.55, y = cy + Math.sin(n.ang) * dist;
-    const node = {x, y, r: Math.max(18, m * 0.05), icon: n.icon}; miniNodes.push(node);
-    const hov = Math.hypot(miniMX - x, miniMY - y) < node.r + 6;
-    c.beginPath(); c.moveTo(cx, cy); c.lineTo(x, y);
-    c.strokeStyle = `rgba(6,13,13,${hov ? 0.45 : 0.14})`; c.lineWidth = hov ? 0.85 : 0.4;
-    c.setLineDash([4, 7]); c.stroke(); c.setLineDash([]);
-    drawHermeticIcon(c, x, y, node.r, n.icon, 0.9, hov, t);
-    c.font = "7px 'Pretendard',sans-serif"; c.fillStyle = 'rgba(6,13,13,0.55)'; c.textAlign = 'center'; c.textBaseline = 'top';
-    c.fillText(i + 1, x, y + node.r + 5); c.textBaseline = 'alphabetic'; c.textAlign = 'left';
-  });
-  /* click flash: the surface briefly mirrors what came to visit it */
-  if (miniFlash) {
-    miniFlashT += 0.011; const al = Math.max(0, 1 - miniFlashT);
-    if (al <= 0) { miniFlash = null; miniFlashT = 0; }
-    else {
-      drawHermeticIcon(c, cx, cy, bR*1.55, miniFlash, al, true, t);
-      c.beginPath(); c.arc(cx, cy, bR*1.55 + miniFlashT*70, 0, Math.PI*2);
-      c.strokeStyle = `rgba(6,13,13,${al*0.4})`; c.lineWidth = 1.4; c.stroke();
-    }
-  }
-}
-(function animMiniPond(){ requestAnimationFrame(animMiniPond); if (current === 'statement') drawMiniPond(); })();
-addEventListener('resize', resizeMiniCanvas); resizeMiniCanvas();
 /* ════ INIT ════ */
 addEventListener('resize', measure);
 addEventListener('load', measure);
