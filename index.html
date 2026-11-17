@@ -288,6 +288,16 @@ body.in-page #sym-nav-fixed{opacity:1;pointer-events:all;transform:translate(-50
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:rgba(245,245,245,0.5);}
 @media(hover:none){body,.sym-btn,.snf-btn,.wk-tile,.contact-link,#cinema-close{cursor:auto;} #cursor,#cursor-ring{display:none;}}
+#hwm{pointer-events:auto;cursor:pointer;}
+#make{position:fixed;inset:0;z-index:2050;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(6,13,13,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s ease;}
+#make.on{opacity:1;}
+.make-card{position:relative;width:min(620px,100%);max-height:86vh;overflow:auto;background:#F5F5F5;color:#060D0D;padding:clamp(26px,4vw,44px);border:.5px solid rgba(6,13,13,.3);transform:translateY(10px);transition:transform .35s ease;}
+#make.on .make-card{transform:none;}
+.make-card h2{margin:0 0 1em;font-family:"Archivo Black","Pretendard",Arial,sans-serif;font-weight:900;font-size:clamp(26px,4vw,40px);letter-spacing:-.01em;text-transform:uppercase;line-height:1;}
+.make-card p{margin:0;font-size:clamp(15px,1.3vw,18px);line-height:1.7;}
+.make-card p:first-of-type{font-weight:700;line-height:1.45;font-size:clamp(16px,1.5vw,20px);}
+.make-card p+p{margin-top:1.2em;color:rgba(6,13,13,.86);}
+.make-x{position:absolute;top:10px;right:14px;background:none;border:0;font-size:30px;line-height:1;color:#060D0D;cursor:pointer;padding:4px 8px;}
 </style>
 </head>
 <body>
@@ -335,6 +345,14 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
 </svg>
 
 <div id="scan"></div>
+<div id="make" role="dialog" aria-modal="true" aria-labelledby="make-t" hidden>
+  <div class="make-card">
+    <button class="make-x" type="button" aria-label="Close">&times;</button>
+    <h2 id="make-t">What I make</h2>
+    <p>Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p>
+    <p>A pond’s surface returns a smooth, borrowed image. Beneath it, life never stops moving. Pond’s work turns away from the reflection we are taught to perform, and toward what lives underneath: the tremor that comfort calls unstable.</p>
+  </div>
+</div>
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
 <div class="hud" id="hudTop"></div>
@@ -357,7 +375,7 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
         <button class="sym-btn" type="button" data-go="about"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="About"><use href="#g-s4"/></svg><span class="sym-lbl">About</span></button>
       </nav>
       <div class="lockup-text-wrap">
-        <svg class="lockup-word" id="hwm" viewBox="0 0 350 168" role="img" aria-label="POND"><use href="#g-word"/></svg>
+        <svg class="lockup-word" id="hwm" viewBox="0 0 350 168" role="button" tabindex="0" aria-haspopup="dialog" aria-label="POND — what I make"><use href="#g-word"/></svg>
       </div>
     </div>
   </div>
@@ -392,14 +410,6 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
     <div class="tr-hud tr-bl" id="tr-hint">Touch the surface · Hold to tremor</div>
     <div class="tr-ctl"><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button></div>
   </div>
-  <section class="section tr-copy">
-    <div class="sec-inner" id="i-statement">
-      <div class="stmt-copy">
-          <p>Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p>
-          <p>A pond’s surface returns a smooth, borrowed image. Beneath it, life never stops moving. Pond’s work turns away from the reflection we are taught to perform, and toward what lives underneath: the tremor that comfort calls unstable.</p>
-      </div>
-    </div>
-  </section>
 </div>
 
 <div class="page" id="p-contact">
@@ -1050,6 +1060,17 @@ addEventListener('load', measure);
 measure();
 route();
 setTimeout(() => { lockEl.classList.add('on'); hudReady = true; updateHUD(); }, 600);
+
+/* Hero: POND wordmark opens "What I make" */
+(function(){
+  const w=document.getElementById('hwm'), box=document.getElementById('make'); if(!w||!box) return;
+  const open=()=>{ box.hidden=false; requestAnimationFrame(()=>box.classList.add('on')); };
+  const close=()=>{ box.classList.remove('on'); setTimeout(()=>{ box.hidden=true; },350); };
+  w.addEventListener('click',open);
+  w.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
+  box.addEventListener('click',e=>{ if(e.target===box||e.target.closest('.make-x')) close(); });
+  addEventListener('keydown',e=>{ if(e.key==='Escape'&&!box.hidden) close(); });
+})();
 </script>
 </body>
 </html>
