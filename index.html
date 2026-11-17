@@ -289,15 +289,19 @@ body.in-page #sym-nav-fixed{opacity:1;pointer-events:all;transform:translate(-50
 body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:rgba(245,245,245,0.5);}
 @media(hover:none){body,.sym-btn,.snf-btn,.wk-tile,.contact-link,#cinema-close{cursor:auto;} #cursor,#cursor-ring{display:none;}}
 #hwm{pointer-events:auto;cursor:pointer;}
-#make{position:fixed;inset:0;z-index:2050;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(6,13,13,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s ease;}
-#make.on{opacity:1;}
-.make-card{position:relative;width:min(620px,100%);max-height:86vh;overflow:auto;background:#F5F5F5;color:#060D0D;padding:clamp(26px,4vw,44px);border:.5px solid rgba(6,13,13,.3);transform:translateY(10px);transition:transform .35s ease;}
-#make.on .make-card{transform:none;}
-.make-card h2{margin:0 0 1em;font-family:"Archivo Black","Pretendard",Arial,sans-serif;font-weight:900;font-size:clamp(26px,4vw,40px);letter-spacing:-.01em;text-transform:uppercase;line-height:1;}
-.make-card p{margin:0;font-size:clamp(15px,1.3vw,18px);line-height:1.7;}
-.make-card p:first-of-type{font-weight:700;line-height:1.45;font-size:clamp(16px,1.5vw,20px);}
-.make-card p+p{margin-top:1.2em;color:rgba(6,13,13,.86);}
-.make-x{position:absolute;top:10px;right:14px;background:none;border:0;font-size:30px;line-height:1;color:#060D0D;cursor:pointer;padding:4px 8px;}
+#lock{transition:translate .6s cubic-bezier(.2,.7,.2,1);}
+#make{position:absolute;z-index:3;left:0;top:0;width:100px;opacity:0;pointer-events:none;transition:opacity .5s ease .1s;color:#060D0D;border-top:.5px solid rgba(6,13,13,.4);padding-top:18px;}
+#make.on{opacity:1;pointer-events:auto;}
+#make h2{margin:0 0 .8em;font-family:"Archivo Black","Pretendard",Arial,sans-serif;font-weight:900;font-size:clamp(16px,2vw,26px);letter-spacing:.02em;text-transform:uppercase;line-height:1;}
+#make p{margin:0;font-size:clamp(13px,1.2vw,17px);line-height:1.65;}
+#make p:first-of-type{font-weight:700;line-height:1.45;font-size:clamp(14px,1.4vw,19px);}
+#make p+p{margin-top:1em;color:rgba(6,13,13,.86);}
+.pg-hud{position:fixed;z-index:160;display:none;font-size:9px;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:#060D0D;pointer-events:none;font-variant-numeric:tabular-nums;white-space:pre;}
+.pg-tl{left:22px;top:18px;}.pg-tr{right:22px;top:18px;text-align:right;}
+body.in-page:not(.on-statement) #pgTL,body.in-page.show-clock:not(.on-statement) #pgTR{display:block;}
+body.in-page .hud{display:none;}
+@media(max-width:600px){.pg-tl{left:14px;top:12px;}.pg-tr{right:14px;top:12px;}.pg-hud{font-size:8px;}}
+#fpsx{position:fixed;left:8px;bottom:8px;z-index:3000;font:11px/1 monospace;background:#060D0D;color:#F5F5F5;padding:4px 6px;pointer-events:none;}
 </style>
 </head>
 <body>
@@ -345,17 +349,11 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
 </svg>
 
 <div id="scan"></div>
-<div id="make" role="dialog" aria-modal="true" aria-labelledby="make-t" hidden>
-  <div class="make-card">
-    <button class="make-x" type="button" aria-label="Close">&times;</button>
-    <h2 id="make-t">What I make</h2>
-    <p>Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p>
-    <p>A pond’s surface returns a smooth, borrowed image. Beneath it, life never stops moving. Pond’s work turns away from the reflection we are taught to perform, and toward what lives underneath: the tremor that comfort calls unstable.</p>
-  </div>
-</div>
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
 <div class="hud" id="hudTop"></div>
+<div class="pg-hud pg-tl" id="pgTL"></div>
+<div class="pg-hud pg-tr" id="pgTR"></div>
 <div class="hud" id="hudBot">— POND · MEDIA ARTIST —<br>REFLECTIONS &amp; FEEDBACK · SEOUL</div>
 
 <section id="hero">
@@ -365,6 +363,7 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
   </video>
   <canvas id="c"></canvas>
 
+<div id="make" aria-hidden="true"><h2>What I make</h2><p>Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p><p>A pond’s surface returns a smooth, borrowed image. Beneath it, life never stops moving. Pond’s work turns away from the reflection we are taught to perform, and toward what lives underneath: the tremor that comfort calls unstable.</p></div>
   <div id="lock">
     <svg class="lockup-mark" id="hmark" viewBox="0 0 1103 442" role="img" aria-label="Pond mark"><use href="#g-mark"/></svg>
     <div id="lock-r">
@@ -385,7 +384,6 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
 <div class="page" id="p-works">
   <section class="section">
     <div class="sec-inner wk-inner">
-      <div class="eyebrow">NODE — 01 · Works</div>
       <div class="mm">
         <div class="st stmt-label">What I make</div>
         <div class="mm-panel" id="mm-panel"><canvas id="mm-cv" aria-hidden="true"></canvas><span class="mm-pn">01</span><span class="mm-pl">Large-scale projection</span>
@@ -405,7 +403,7 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
     <div class="tr-fallback"><div class="stmt">
           <div class="st stmt-q" id="stmt-q"><span class="q1">Comfort is obedience.</span><span class="q2">Trust the <span class="trem">tremor.</span></span></div>
     </div></div>
-    <div class="tr-hud tr-tl">Pond — Tremor Study 01<br>Surface / Beneath</div>
+    <div class="tr-hud tr-tl">POND — STATEMENT</div>
     <div class="tr-hud tr-tr">Tremor <span id="tr-val">0.00</span><span class="tr-meter"><i id="tr-bar"></i></span><br><span id="tr-state">Surface calm</span></div>
     <div class="tr-hud tr-bl" id="tr-hint">Touch the surface · Hold to tremor</div>
     <div class="tr-ctl"><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button></div>
@@ -415,8 +413,7 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
 <div class="page" id="p-contact">
   <section class="section">
     <div class="sec-inner">
-      <div class="eyebrow">NODE — 03 · Contact</div>
-      <div class="sec-title">Reach<br>Out</div>
+            <div class="sec-title">Reach<br>Out</div>
       <div class="sec-body">Commissions, collaborations,<br>and residency inquiries welcome.</div>
       <dl class="info">
         <div class="info-row"><dt>Instagram</dt><dd><a href="https://www.instagram.com/pond.ink/" target="_blank" rel="noopener">@pond.ink ↗</a></dd></div>
@@ -428,17 +425,12 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
 <div class="page" id="p-about">
   <section class="section">
     <div class="sec-inner ab-inner">
-      <div class="eyebrow">NODE — 04 · About</div>
-
+      
       <div class="ab-head">
         <div class="sec-title">Pond</div>
         <p class="ab-bio">Pond interrogates the avoidant, performative and comfort-seeking identity manufactured by contemporary mechanisms of social control.</p>
       </div>
 
-      <!-- WHERE POND HAS BEEN + LANGUAGES -->
-      <section class="ab-sec">
-        <p class="ab-para">Born in Daegu, Pond spent a school term in Khabarovsk in 2004, then grew up in Los Angeles and Long Beach, where the identity took shape from 2008 to 2020. Before moving into image and sound for rooms, Pond was a musician, writing songs and playing guitar. Now working from Seoul, in English and Korean, both native.</p>
-      </section>
 
       <!-- CALL TO ACTION -->
       <a class="ab-cta" href="#contact" data-go="contact"><span>Available for commissions, live A/V and site-specific installations.</span><b>Contact →</b></a>
@@ -1061,15 +1053,42 @@ measure();
 route();
 setTimeout(() => { lockEl.classList.add('on'); hudReady = true; updateHUD(); }, 600);
 
-/* Hero: POND wordmark opens "What I make" */
+
+/* Hero: POND wordmark expands the lockup to reveal "What I make" below */
 (function(){
-  const w=document.getElementById('hwm'), box=document.getElementById('make'); if(!w||!box) return;
-  const open=()=>{ box.hidden=false; requestAnimationFrame(()=>box.classList.add('on')); };
-  const close=()=>{ box.classList.remove('on'); setTimeout(()=>{ box.hidden=true; },350); };
-  w.addEventListener('click',open);
-  w.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
-  box.addEventListener('click',e=>{ if(e.target===box||e.target.closest('.make-x')) close(); });
-  addEventListener('keydown',e=>{ if(e.key==='Escape'&&!box.hidden) close(); });
+  const w=document.getElementById('hwm'), box=document.getElementById('make'), lock=document.getElementById('lock'); if(!w||!box||!lock) return;
+  let open=false;
+  function place(){
+    lock.style.translate='0 0';
+    const m=document.getElementById('hmark').getBoundingClientRect(), q=document.getElementById('lock-r').getBoundingClientRect();
+    const r={left:m.left,top:Math.min(m.top,q.top),bottom:Math.max(m.bottom,q.bottom),width:q.right-m.left}; r.height=r.bottom-r.top;
+    box.style.width=r.width+'px'; box.style.left=r.left+'px';
+    if(!open){ box.style.top=(r.bottom+22)+'px'; return; }
+    const h=box.offsetHeight+26, shift=Math.max(0,Math.min(h/2, r.top-70));
+    lock.style.translate='0 '+(-shift)+'px'; box.style.top=(r.bottom-shift+26)+'px';
+  }
+  function set(v){ open=v; box.classList.toggle('on',v); box.setAttribute('aria-hidden',!v); w.setAttribute('aria-expanded',v); place(); }
+  w.setAttribute('role','button'); w.setAttribute('tabindex','0'); w.setAttribute('aria-expanded','false');
+  w.addEventListener('click',()=>set(!open));
+  w.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(!open); } });
+  addEventListener('keydown',e=>{ if(e.key==='Escape'&&open) set(false); });
+  addEventListener('resize',place); setTimeout(place,900);
+  window.__makeClose=()=>set(false);
+})();
+
+/* Page labels (top left) and clock (top right on Contact/About) */
+(function(){
+  const tl=document.getElementById('pgTL'), tr=document.getElementById('pgTR');
+  const D=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'], M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  function tick(){
+    if(current) tl.textContent='POND — '+PAGES[current].toUpperCase();
+    document.body.classList.toggle('show-clock', current==='contact'||current==='about');
+    const n=new Date(), t=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    tr.textContent=t+'\n'+String(n.getDate()).padStart(2,'0')+' '+M[n.getMonth()]+' '+n.getFullYear()+'\n'+D[n.getDay()];
+  }
+  setInterval(tick,1000); tick();
+  const _g=window.go; if(typeof _g==='function'){ window.go=function(k){ const r=_g.apply(this,arguments); tick(); if(window.__makeClose) window.__makeClose(); return r; }; }
+  if(/[?&]fps/.test(location.search)){ const f=document.createElement('div'); f.id='fpsx'; document.body.appendChild(f); let c=0,l=performance.now(); (function r(t){ c++; if(t-l>=1000){ f.textContent=Math.round(c*1000/(t-l))+' fps'; c=0; l=t; } requestAnimationFrame(r); })(l); }
 })();
 </script>
 </body>
