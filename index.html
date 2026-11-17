@@ -86,10 +86,10 @@ svg.sym-ic{display:block;aspect-ratio:90/98;width:auto;overflow:visible;}
 /* ══════════════════════════
    PAGES — one at a time, opened by a click
 ══════════════════════════ */
-.page{position:fixed;left:0;right:0;top:92px;bottom:112px;z-index:10;background:#F5F5F5;overflow-y:auto;overflow-x:hidden;display:none;opacity:0;transition:opacity .45s ease;overscroll-behavior:contain;}
+.page{position:fixed;left:0;right:0;top:92px;bottom:0;padding-bottom:112px;z-index:10;background:#F5F5F5;overflow-y:auto;overflow-x:hidden;display:none;opacity:0;transition:opacity .45s ease;overscroll-behavior:contain;}
 .page.on{opacity:1;}
 .section{min-height:100%;display:flex;align-items:center;justify-content:center;padding:clamp(24px,5vh,60px) clamp(24px,7vw,100px);}
-.page{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);}
+.page{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 18px);mask-image:linear-gradient(to bottom,transparent 0,#000 18px);}
 .sec-inner{max-width:900px;width:100%;opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1);}
 .page.on .sec-inner{opacity:1;transform:none;}
 .eyebrow{font-size:7.5px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(6,13,13,0.35);margin-bottom:24px;display:flex;align-items:center;gap:14px;}
@@ -121,23 +121,32 @@ svg.sym-ic{display:block;aspect-ratio:90/98;width:auto;overflow:visible;}
 .mm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0;}
 
 .pond-stage{min-height:min(40vh,400px);padding:clamp(28px,5vh,56px) 0;}
-#p-statement.gl{overflow:hidden;}
-#p-statement.gl .section{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);pointer-events:none;}
-.tr-stage{position:absolute;inset:0;display:none;touch-action:none;}
-#p-statement.gl .tr-stage{display:block;}
-.tr-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 1.2s ease;}
+/* STATEMENT — full-screen tremor surface, written statement below */
+#p-statement{top:0;padding-bottom:0;z-index:150;-webkit-mask-image:none;mask-image:none;}
+.tr-stage{position:relative;height:100vh;height:100svh;overflow:hidden;touch-action:pan-y;background:#F5F5F5;}
+.tr-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:none;opacity:0;transition:opacity 1.2s ease;}
+#p-statement.gl .tr-stage canvas{display:block;}
 #p-statement.on .tr-stage canvas{opacity:1;}
-.tr-hud{position:absolute;z-index:3;font-size:8.5px;letter-spacing:.22em;line-height:1.9;text-transform:uppercase;color:#F5F5F5;mix-blend-mode:difference;pointer-events:none;transition:opacity 1.2s ease;}
-.tr-tl{left:clamp(20px,4vw,60px);top:24px;}
-.tr-tr{right:clamp(20px,4vw,60px);top:24px;text-align:right;font-variant-numeric:tabular-nums;}
-.tr-bl{left:clamp(20px,4vw,60px);bottom:22px;}
+.tr-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 6vw;}
+#p-statement.gl .tr-fallback{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);pointer-events:none;}
+.tr-hud{position:absolute;z-index:3;display:none;font-size:9px;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:#F5F5F5;mix-blend-mode:difference;pointer-events:none;transition:opacity 1.2s ease;}
+#p-statement.gl .tr-hud{display:block;}
+.tr-tl{left:22px;top:18px;}
+.tr-tr{right:22px;top:18px;text-align:right;font-variant-numeric:tabular-nums;}
+.tr-bl{left:22px;bottom:18px;}
 .tr-meter{display:inline-block;width:64px;height:1px;background:rgba(245,245,245,.3);vertical-align:middle;margin-left:8px;position:relative;}
 .tr-meter i{position:absolute;left:0;top:-1px;height:3px;width:0;background:#F5F5F5;}
-.tr-ctl{position:absolute;z-index:3;right:clamp(20px,4vw,60px);bottom:18px;display:flex;gap:8px;mix-blend-mode:difference;}
-.tr-btn{font:inherit;font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:#F5F5F5;background:none;border:1px solid rgba(245,245,245,.55);padding:7px 11px 6px;cursor:none;}
+.tr-ctl{position:absolute;z-index:3;right:22px;bottom:14px;display:none;gap:8px;mix-blend-mode:difference;}
+#p-statement.gl .tr-ctl{display:flex;}
+.tr-btn{font:inherit;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#F5F5F5;background:none;border:1px solid rgba(245,245,245,.55);padding:7px 11px 6px;cursor:none;}
 .tr-btn:hover,.tr-btn:focus-visible{border-color:#F5F5F5;outline:none;}
 .tr-btn[aria-pressed="true"]{background:#F5F5F5;color:#060D0D;}
-@media(max-width:560px){.tr-bl{bottom:58px;}.tr-meter{width:40px;}}
+.tr-copy{min-height:0;padding-bottom:150px;}
+body.on-statement #scan,body.on-statement .hud{display:none;}
+body.on-statement #cursor{background:#F5F5F5;mix-blend-mode:difference;}
+body.on-statement #cursor-ring{border:1px solid rgba(245,245,245,.7);mix-blend-mode:difference;}
+body.on-statement.tr-held #cursor-ring{width:54px;height:54px;}
+@media(max-width:600px){.tr-tl{left:14px;top:12px;}.tr-tr{right:14px;top:12px;}.tr-hud{font-size:8px;}.tr-bl{left:14px;bottom:126px;}.tr-ctl{right:14px;bottom:84px;}.tr-meter{width:40px;}}
 .stmt-copy{position:relative;z-index:2;max-width:66ch;margin:clamp(20px,3vh,36px) auto 0;text-align:left;}
 .stmt-copy p{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease;}
 .stmt-copy p.on{opacity:1;transform:none;}
@@ -250,13 +259,17 @@ svg.sym-ic{display:block;aspect-ratio:90/98;width:auto;overflow:visible;}
 
 /* PAGE NAV — home mark + the 4 symbols, only while a page is open */
 #sym-nav-fixed{
-  /* same frosted HUD material as the TIME / VIEWPORT box — just bigger, and still a round bar */
-  position:fixed;bottom:22px;left:50%;transform:translate(-50%,8px);
+  /* a standalone liquid-glass object: clear body, bright rim, specular top, soft drop shadow */
+  position:fixed;bottom:22px;left:50%;transform:translate(-50%,8px);isolation:isolate;
   display:flex;align-items:center;gap:clamp(14px,2vw,28px);
-  z-index:500;opacity:0;pointer-events:none;transition:opacity .4s ease,transform .4s ease;
-  background:rgba(245,245,245,0.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  border:0.5px solid rgba(6,13,13,0.08);border-radius:999px;padding:12px clamp(22px,2.8vw,34px);
+  z-index:500;opacity:0;pointer-events:none;transition:opacity .4s ease,transform .4s ease,box-shadow .3s ease;
+  background:linear-gradient(160deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.06) 48%,rgba(255,255,255,.16) 100%);
+  -webkit-backdrop-filter:blur(10px) saturate(200%) contrast(1.05);backdrop-filter:blur(10px) saturate(200%) contrast(1.05);
+  border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:12px clamp(22px,2.8vw,34px);
+  box-shadow:0 14px 36px rgba(6,13,13,.16),0 3px 8px rgba(6,13,13,.08),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(6,13,13,.10),inset 0 0 0 .5px rgba(6,13,13,.06),inset 0 -10px 22px rgba(255,255,255,.18);
 }
+#sym-nav-fixed::before{content:'';position:absolute;z-index:-1;left:10px;right:10px;top:2px;height:46%;border-radius:999px 999px 60% 60% / 999px 999px 100% 100%;background:linear-gradient(to bottom,rgba(255,255,255,.75),rgba(255,255,255,0));pointer-events:none;}
+#sym-nav-fixed::after{content:'';position:absolute;z-index:-1;inset:0;border-radius:inherit;background:radial-gradient(120% 140% at 50% 120%,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);pointer-events:none;}
 body.in-page #sym-nav-fixed{opacity:1;pointer-events:all;transform:translate(-50%,0);}
 .snf-btn{background:none;border:none;cursor:none;opacity:0.4;transition:opacity .2s;padding:7px;position:relative;}
 .snf-btn:hover,.snf-btn.active{opacity:1;}
@@ -371,19 +384,16 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
 <div class="page" id="p-statement">
   <div class="tr-stage" id="pond-echo">
     <canvas id="c-stmt" aria-hidden="true"></canvas>
-    <div class="tr-hud tr-tl">NODE — 02 · Statement<br>Surface / Beneath</div>
+    <div class="tr-fallback"><div class="stmt">
+          <div class="st stmt-q" id="stmt-q"><span class="q1">Comfort is obedience.</span><span class="q2">Trust the <span class="trem">tremor.</span></span></div>
+    </div></div>
+    <div class="tr-hud tr-tl">Pond — Tremor Study 01<br>Surface / Beneath</div>
     <div class="tr-hud tr-tr">Tremor <span id="tr-val">0.00</span><span class="tr-meter"><i id="tr-bar"></i></span><br><span id="tr-state">Surface calm</span></div>
     <div class="tr-hud tr-bl" id="tr-hint">Touch the surface · Hold to tremor</div>
     <div class="tr-ctl"><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button></div>
   </div>
-  <section class="section">
+  <section class="section tr-copy">
     <div class="sec-inner" id="i-statement">
-      <div class="eyebrow">NODE — 02 · Statement</div>
-      <div class="pond-stage" id="pond-fallback">
-        <div class="stmt">
-          <div class="st stmt-q" id="stmt-q"><span class="q1">Comfort is obedience.</span><span class="q2">Trust the <span class="trem">tremor.</span></span></div>
-        </div>
-      </div>
       <div class="stmt-copy">
           <p>Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p>
           <p>A pond’s surface returns a smooth, borrowed image. Beneath it, life never stops moving. Pond’s work turns away from the reflection we are taught to perform, and toward what lives underneath: the tremor that comfort calls unstable.</p>
@@ -391,6 +401,7 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
     </div>
   </section>
 </div>
+
 <div class="page" id="p-contact">
   <section class="section">
     <div class="sec-inner">
@@ -507,6 +518,7 @@ function show(key) {
   const prev = current ? document.getElementById('p-' + current) : null;
   current = key;
   document.body.classList.toggle('in-page', !!key);
+  document.body.classList.toggle('on-statement', key === 'statement');
   navBtns.forEach(b => b.classList.toggle('active', b.dataset.go === key && !!key));
   if (prev) { prev.classList.remove('on'); setTimeout(() => { if (current !== prev.id.slice(2)) prev.style.display = 'none'; }, 460); }
   if (key) {
@@ -760,9 +772,9 @@ const ioReveal = new IntersectionObserver((es) => {
 }, {threshold:0.12});
 document.querySelectorAll('.st,.pond-stage,.wk-tile,.stmt-copy p').forEach(el => ioReveal.observe(el));
 
-/* TREMOR SURFACE — the whole Statement page is a water surface. The quote and the statement copy float on it;
+/* TREMOR SURFACE — Statement opens as a full-screen water surface (Tremor Study 01). "Comfort is obedience." sits on it;
    stirring or holding breaks it open to "Trust the tremor." and the living cells beneath, and it seals back when left alone.
-   Runs only while Statement is open. Without WebGL 2 the normal HTML statement shows instead. */
+   The written statement follows below. Runs only while the surface is on screen. Without WebGL 2 the HTML quote shows instead. */
 (function(){
 'use strict';
 const stage = document.getElementById('pond-echo'), cv = document.getElementById('c-stmt'), page = document.getElementById('p-statement');
@@ -827,7 +839,7 @@ float cells(vec2 p, float t, float e, float sc){
 void main(){
   /* everything dies out before the stage edge, so the stage melts into the page */
   vec2 ev = min(v, 1.-v) * uAsp;
-  float edge = smoothstep(.0, .1, min(ev.x, ev.y));
+  float edge = 1.;
   vec4 s = texture(uS,v);
   float hl = texture(uS,v-vec2(uPx.x,0.)).r, hr = texture(uS,v+vec2(uPx.x,0.)).r;
   float hd = texture(uS,v-vec2(0.,uPx.y)).r, hu = texture(uS,v+vec2(0.,uPx.y)).r;
@@ -854,7 +866,7 @@ void main(){
   float rim = smoothstep(.06,.115,e) * (1.-reveal) * edge;
   col = mix(col, INK, rim*.22);
   col = mix(col, PAPER, smoothstep(.158,.17,e)*(1.-smoothstep(.17,.2,e))*.45*edge);
-  col += (h1(v*913.+fract(uT))-.5)*.014*reveal;
+  col += (h1(v*913.+fract(uT))-.5)*.014;
   o = vec4(col,1.);
 }`;
 
@@ -885,46 +897,13 @@ function mkSim(){ const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
   return {t,f}; }
 
 const FONT = '"Archivo Black","Pretendard","Arial Black",Arial,sans-serif';
-const PFONT = "'Pretendard','Noto Sans JP',sans-serif";
-const QA = ['COMFORT IS','OBEDIENCE.'], QB = ['TRUST THE','TREMOR.'];
-const paras = [...page.querySelectorAll('.stmt-copy p')].map(p => p.textContent.trim().replace(/\s+/g,' '));
-function wrap(x, text, maxW){
-  const out = []; let line = '';
-  for (const w of text.split(' ')){ const t = line ? line+' '+w : w;
-    if (line && x.measureText(t).width > maxW){ out.push(line); line = w; } else line = t; }
-  if (line) out.push(line); return out; }
-/* quote on top, statement copy below — sized to fit the page in one screen */
-function layout(tw, th, css){
-  const m = document.createElement('canvas').getContext('2d');
-  const vw = tw/css, portrait = tw < th*1.1;
-  const padX = Math.max(22, Math.min(100, vw*.07))*css, padY = 64*css;
-  m.font = `900 100px ${FONT}`;
-  const widest = Math.max(...QA.concat(QB).map(l => m.measureText(l).width));
-  let qs = Math.min((tw-2*padX)*(portrait ? 1 : .8)/widest*100, th*.4/1.8);
-  let p1 = Math.min(23, Math.max(17, vw*.017))*css, p2 = Math.min(17, Math.max(14, vw*.012))*css;
-  const colW = Math.min(tw-2*padX, 660*css);
-  let L;
-  for (let i=0; i<16; i++){
-    m.font = `700 ${p1}px ${PFONT}`; const l1 = wrap(m, paras[0]||'', colW);
-    m.font = `500 ${p2}px ${PFONT}`; const rest = paras.slice(1).map(t => wrap(m, t, colW));
-    const qh = qs*.9*2, gap1 = Math.max(26*css, qs*.24), lh1 = p1*1.42, lh2 = p2*1.75, gp = p2*1.4;
-    const ch = l1.length*lh1 + rest.reduce((a,l) => a + gp + l.length*lh2, 0);
-    const total = qh + gap1 + ch;
-    L = {qs, p1, p2, colW, l1, rest, qh, gap1, lh1, lh2, gp, top:(th-total)/2};
-    if (total <= th-2*padY || p2 < 10*css) break;
-    const k = Math.max(.86, Math.sqrt((th-2*padY)/total)); qs *= k; p1 *= k; p2 *= k;
-  }
-  return L; }
-function textTex(L, quote, tw, th){
+const LINES_A = ['COMFORT IS','OBEDIENCE.'], LINES_B = ['TRUST THE','TREMOR.'];
+function textTex(lines, size, tw, th){
   const c = document.createElement('canvas'); c.width = tw; c.height = th;
-  const x = c.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,tw,th); x.fillStyle='#fff';
-  x.textAlign='center'; x.textBaseline='alphabetic'; x.font = `900 ${L.qs}px ${FONT}`;
-  quote.forEach((l,i) => x.fillText(l, tw/2, L.top + L.qs*.8 + i*L.qs*.9));
-  const cx = (tw-L.colW)/2; let y = L.top + L.qh + L.gap1;
-  x.textAlign='left'; x.textBaseline='top';
-  x.font = `700 ${L.p1}px ${PFONT}`; L.l1.forEach(l => { x.fillText(l, cx, y + (L.lh1-L.p1)/2); y += L.lh1; });
-  x.font = `500 ${L.p2}px ${PFONT}`; x.globalAlpha = .86;
-  L.rest.forEach(ls => { y += L.gp; ls.forEach(l => { x.fillText(l, cx, y + (L.lh2-L.p2)/2); y += L.lh2; }); });
+  const x = c.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,tw,th);
+  x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='alphabetic'; x.font = `900 ${size}px ${FONT}`;
+  const lh = size*.9, top = th/2 - (lines.length*lh)/2 + size*.8;
+  lines.forEach((l,i) => x.fillText(l, tw/2, top + i*lh));
   const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,gl.RED,gl.UNSIGNED_BYTE,c);
@@ -934,11 +913,13 @@ function textTex(L, quote, tw, th){
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   return t; }
 function buildText(){
-  const max = Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE), 2880);
+  const max = Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE), 2560);
   const k = Math.min(1, max/Math.max(W,H)), tw = Math.round(W*k), th = Math.round(H*k);
-  const L = layout(tw, th, tw/stage.clientWidth);
+  const m = document.createElement('canvas').getContext('2d'); m.font = `900 100px ${FONT}`;
+  const widest = Math.max(...LINES_A.concat(LINES_B).map(l => m.measureText(l).width));
+  const size = Math.min((tw * (tw < th ? .88 : .74)) / widest * 100, th*.5/1.8);
   if (texA) gl.deleteTexture(texA); if (texB) gl.deleteTexture(texB);
-  texA = textTex(L, QA, tw, th); texB = textTex(L, QB, tw, th); }
+  texA = textTex(LINES_A,size,tw,th); texB = textTex(LINES_B,size,tw,th); }
 
 function resize(){
   const cw = stage.clientWidth, ch = stage.clientHeight;
@@ -956,9 +937,7 @@ function resize(){
 }
 if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(stage);
 addEventListener('resize', resize);
-if (document.fonts && document.fonts.load)
-  Promise.all(['900 100px "Archivo Black"','700 20px Pretendard','500 20px Pretendard'].map(f => document.fonts.load(f).catch(() => {})))
-    .then(() => { if (ready) buildText(); });
+if (document.fonts && document.fonts.load) document.fonts.load('900 100px "Archivo Black"').then(() => { if (ready) buildText(); }, () => {});
 
 /* input */
 const ptr = {x:.5,y:.5,px:.5,py:.5,down:false,moved:false,in:false,downAt:0};
@@ -968,9 +947,9 @@ const hint = document.getElementById('tr-hint'), valEl = document.getElementById
 function setPtr(ev){ const r = cv.getBoundingClientRect(); ptr.x = (ev.clientX-r.left)/r.width; ptr.y = 1 - (ev.clientY-r.top)/r.height; }
 function firstTouch(){ if (touched) return; touched = true; if (hint) hint.style.opacity = 0; }
 stage.addEventListener('pointerdown', ev => { if (ev.target.closest('.tr-ctl')) return; setPtr(ev); ptr.px=ptr.x; ptr.py=ptr.y; ptr.down = true; ptr.in = true; ptr.downAt = performance.now();
-  drops.push({x:ptr.x,y:ptr.y,s:.55,r:.035}); activity = Math.min(1, activity+.35); lastTouch = performance.now(); firstTouch(); blip(); });
+  drops.push({x:ptr.x,y:ptr.y,s:.55,r:.035}); activity = Math.min(1, activity+.35); lastTouch = performance.now(); document.body.classList.add('tr-held'); firstTouch(); blip(); });
 stage.addEventListener('pointermove', ev => { if (!ptr.in){ setPtr(ev); ptr.px=ptr.x; ptr.py=ptr.y; ptr.in=true; return; } setPtr(ev); ptr.moved = true; });
-const up = () => { ptr.down = false; };
+const up = () => { ptr.down = false; document.body.classList.remove('tr-held'); };
 addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
 stage.addEventListener('pointerleave', () => { ptr.in = false; });
 
