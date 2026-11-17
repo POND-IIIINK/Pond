@@ -288,20 +288,18 @@ body.in-page #sym-nav-fixed{opacity:1;pointer-events:all;transform:translate(-50
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:rgba(245,245,245,0.5);}
 @media(hover:none){body,.sym-btn,.snf-btn,.wk-tile,.contact-link,#cinema-close{cursor:auto;} #cursor,#cursor-ring{display:none;}}
-#hwm{pointer-events:auto;cursor:pointer;}
-#lock{transition:translate .6s cubic-bezier(.2,.7,.2,1);}
-#make{position:absolute;z-index:3;left:0;top:0;width:100px;opacity:0;pointer-events:none;transition:opacity .5s ease .1s;color:#060D0D;border-top:.5px solid rgba(6,13,13,.4);padding-top:18px;}
-#make.on{opacity:1;pointer-events:auto;}
-#make h2{margin:0 0 .8em;font-family:"Archivo Black","Pretendard",Arial,sans-serif;font-weight:900;font-size:clamp(16px,2vw,26px);letter-spacing:.02em;text-transform:uppercase;line-height:1;}
-#make p{margin:0;font-size:clamp(13px,1.2vw,17px);line-height:1.65;}
-#make p:first-of-type{font-weight:700;line-height:1.45;font-size:clamp(14px,1.4vw,19px);}
-#make p+p{margin-top:1em;color:rgba(6,13,13,.86);}
 .pg-hud{position:fixed;z-index:160;display:none;font-size:9px;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:#060D0D;pointer-events:none;font-variant-numeric:tabular-nums;white-space:pre;}
 .pg-tl{left:22px;top:18px;}.pg-tr{right:22px;top:18px;text-align:right;}
-body.in-page:not(.on-statement) #pgTL,body.in-page.show-clock:not(.on-statement) #pgTR{display:block;}
+body.in-page:not(.on-statement) #pgTL,body.show-clock:not(.on-statement) #pgTR{display:block;}
 body.in-page .hud{display:none;}
 @media(max-width:600px){.pg-tl{left:14px;top:12px;}.pg-tr{right:14px;top:12px;}.pg-hud{font-size:8px;}}
 #fpsx{position:fixed;left:8px;bottom:8px;z-index:3000;font:11px/1 monospace;background:#060D0D;color:#F5F5F5;padding:4px 6px;pointer-events:none;}
+.tr-more{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:clamp(104px,14vh,140px);width:min(66ch,calc(100% - 44px));display:none;opacity:0;pointer-events:none;transition:opacity .6s ease;color:#F5F5F5;mix-blend-mode:difference;font-size:clamp(14px,1.2vw,17px);font-weight:500;line-height:1.75;}
+#p-statement.gl .tr-more{display:block;}
+.tr-more.on{opacity:1;}
+.tr-more p{margin:0;}.tr-more p+p{margin-top:1.1em;}
+@media(max-width:600px){.tr-more{bottom:176px;}}
+.wk-lead{max-width:66ch;margin:6px auto 30px;text-align:center;font-size:clamp(17px,1.7vw,23px);font-weight:700;line-height:1.42;letter-spacing:-0.01em;color:#060D0D;}
 </style>
 </head>
 <body>
@@ -351,10 +349,8 @@ body.in-page .hud{display:none;}
 <div id="scan"></div>
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
-<div class="hud" id="hudTop"></div>
 <div class="pg-hud pg-tl" id="pgTL"></div>
 <div class="pg-hud pg-tr" id="pgTR"></div>
-<div class="hud" id="hudBot">— POND · MEDIA ARTIST —<br>REFLECTIONS &amp; FEEDBACK · SEOUL</div>
 
 <section id="hero">
   <!-- Trailer — replace the src below with your jsDelivr / GitHub Pages video URL. -->
@@ -363,18 +359,17 @@ body.in-page .hud{display:none;}
   </video>
   <canvas id="c"></canvas>
 
-<div id="make" aria-hidden="true"><h2>What I make</h2><p>Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p><p>A pond’s surface returns a smooth, borrowed image. Beneath it, life never stops moving. Pond’s work turns away from the reflection we are taught to perform, and toward what lives underneath: the tremor that comfort calls unstable.</p></div>
   <div id="lock">
     <svg class="lockup-mark" id="hmark" viewBox="0 0 1103 442" role="img" aria-label="Pond mark"><use href="#g-mark"/></svg>
     <div id="lock-r">
       <nav id="sym-row" aria-label="Main">
-        <button class="sym-btn" type="button" data-go="works"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Works"><use href="#g-s1"/></svg><span class="sym-lbl">Works</span></button>
-        <button class="sym-btn" type="button" data-go="statement"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Statement"><use href="#g-s2"/></svg><span class="sym-lbl">Statement</span></button>
+        <button class="sym-btn" type="button" data-go="statement"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Statement"><use href="#g-s1"/></svg><span class="sym-lbl">Statement</span></button>
+        <button class="sym-btn" type="button" data-go="works"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Works"><use href="#g-s2"/></svg><span class="sym-lbl">Works</span></button>
         <button class="sym-btn" type="button" data-go="contact"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Contact"><use href="#g-s3"/></svg><span class="sym-lbl">Contact</span></button>
         <button class="sym-btn" type="button" data-go="about"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="About"><use href="#g-s4"/></svg><span class="sym-lbl">About</span></button>
       </nav>
       <div class="lockup-text-wrap">
-        <svg class="lockup-word" id="hwm" viewBox="0 0 350 168" role="button" tabindex="0" aria-haspopup="dialog" aria-label="POND — what I make"><use href="#g-word"/></svg>
+        <svg class="lockup-word" id="hwm" viewBox="0 0 350 168" role="img" aria-label="POND"><use href="#g-word"/></svg>
       </div>
     </div>
   </div>
@@ -386,6 +381,7 @@ body.in-page .hud{display:none;}
     <div class="sec-inner wk-inner">
       <div class="mm">
         <div class="st stmt-label">What I make</div>
+        <p class="wk-lead">Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p>
         <div class="mm-panel" id="mm-panel"><canvas id="mm-cv" aria-hidden="true"></canvas><span class="mm-pn">01</span><span class="mm-pl">Large-scale projection</span>
           <h2 class="mm-sr">Projections that take over the wall. Mixed media, built to send messages.</h2></div>
       </div>
@@ -406,7 +402,9 @@ body.in-page .hud{display:none;}
     <div class="tr-hud tr-tl">POND — STATEMENT</div>
     <div class="tr-hud tr-tr">Tremor <span id="tr-val">0.00</span><span class="tr-meter"><i id="tr-bar"></i></span><br><span id="tr-state">Surface calm</span></div>
     <div class="tr-hud tr-bl" id="tr-hint">Touch the surface · Hold to tremor</div>
-    <div class="tr-ctl"><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button></div>
+    <div class="tr-ctl"><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button><button class="tr-btn" id="tr-more" aria-expanded="false">More</button>
+    </div>
+    <div class="tr-more" id="tr-moretext"><p>A pond’s surface returns a smooth, borrowed image. Beneath it, life never stops moving.</p><p>Turn away from the reflection we are taught to perform, and toward what lives underneath: the tremor that comfort calls unstable.</p></div>
   </div>
 </div>
 
@@ -448,8 +446,8 @@ body.in-page .hud{display:none;}
 <nav id="sym-nav-fixed" aria-label="Pages">
   <button class="snf-btn snf-home" data-go=""><svg class=""  viewBox="0 0 1103 442" role="img" aria-label="Home"><use href="#g-mark"/></svg><span class="snf-tip">Home</span></button>
   <span class="snf-sep"></span>
-  <button class="snf-btn" data-go="works"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Works"><use href="#g-s1"/></svg><span class="snf-tip">Works</span></button>
-  <button class="snf-btn" data-go="statement"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Statement"><use href="#g-s2"/></svg><span class="snf-tip">Statement</span></button>
+  <button class="snf-btn" data-go="statement"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Statement"><use href="#g-s1"/></svg><span class="snf-tip">Statement</span></button>
+  <button class="snf-btn" data-go="works"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Works"><use href="#g-s2"/></svg><span class="snf-tip">Works</span></button>
   <button class="snf-btn" data-go="contact"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="Contact"><use href="#g-s3"/></svg><span class="snf-tip">Contact</span></button>
   <button class="snf-btn" data-go="about"><svg class="sym-ic"  viewBox="0 0 90 98" role="img" aria-label="About"><use href="#g-s4"/></svg><span class="snf-tip">About</span></button>
 </nav>
@@ -497,7 +495,6 @@ function updateHUD() {
   const ts  = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const off = -now.getTimezoneOffset();
   const tz  = 'UTC'+(off>=0?'+':'-')+String(Math.floor(Math.abs(off)/60)).padStart(2,'0')+':'+String(Math.abs(off)%60).padStart(2,'0');
-  document.getElementById('hudTop').textContent = `TIME — ${ts}  ${tz}\nVIEWPORT — ${innerWidth}×${innerHeight}\nPAGE — ${current ? PAGES[current] : 'Pond'}`;
 }
 setInterval(updateHUD, 1000);
 
@@ -1054,42 +1051,24 @@ route();
 setTimeout(() => { lockEl.classList.add('on'); hudReady = true; updateHUD(); }, 600);
 
 
-/* Hero: POND wordmark expands the lockup to reveal "What I make" below */
-(function(){
-  const w=document.getElementById('hwm'), box=document.getElementById('make'), lock=document.getElementById('lock'); if(!w||!box||!lock) return;
-  let open=false;
-  function place(){
-    lock.style.translate='0 0';
-    const m=document.getElementById('hmark').getBoundingClientRect(), q=document.getElementById('lock-r').getBoundingClientRect();
-    const r={left:m.left,top:Math.min(m.top,q.top),bottom:Math.max(m.bottom,q.bottom),width:q.right-m.left}; r.height=r.bottom-r.top;
-    box.style.width=r.width+'px'; box.style.left=r.left+'px';
-    if(!open){ box.style.top=(r.bottom+22)+'px'; return; }
-    const h=box.offsetHeight+26, shift=Math.max(0,Math.min(h/2, r.top-70));
-    lock.style.translate='0 '+(-shift)+'px'; box.style.top=(r.bottom-shift+26)+'px';
-  }
-  function set(v){ open=v; box.classList.toggle('on',v); box.setAttribute('aria-hidden',!v); w.setAttribute('aria-expanded',v); place(); }
-  w.setAttribute('role','button'); w.setAttribute('tabindex','0'); w.setAttribute('aria-expanded','false');
-  w.addEventListener('click',()=>set(!open));
-  w.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(!open); } });
-  addEventListener('keydown',e=>{ if(e.key==='Escape'&&open) set(false); });
-  addEventListener('resize',place); setTimeout(place,900);
-  window.__makeClose=()=>set(false);
-})();
-
 /* Page labels (top left) and clock (top right on Contact/About) */
 (function(){
   const tl=document.getElementById('pgTL'), tr=document.getElementById('pgTR');
   const D=['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'], M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   function tick(){
     if(current) tl.textContent='POND — '+PAGES[current].toUpperCase();
-    document.body.classList.toggle('show-clock', current==='contact'||current==='about');
+    document.body.classList.toggle('show-clock', !current||current==='contact'||current==='about');
     const n=new Date(), t=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     tr.textContent=t+'\n'+String(n.getDate()).padStart(2,'0')+' '+M[n.getMonth()]+' '+n.getFullYear()+'\n'+D[n.getDay()];
   }
   setInterval(tick,1000); tick();
-  const _g=window.go; if(typeof _g==='function'){ window.go=function(k){ const r=_g.apply(this,arguments); tick(); if(window.__makeClose) window.__makeClose(); return r; }; }
+  const _g=window.go; if(typeof _g==='function'){ window.go=function(k){ const r=_g.apply(this,arguments); tick(); return r; }; }
   if(/[?&]fps/.test(location.search)){ const f=document.createElement('div'); f.id='fpsx'; document.body.appendChild(f); let c=0,l=performance.now(); (function r(t){ c++; if(t-l>=1000){ f.textContent=Math.round(c*1000/(t-l))+' fps'; c=0; l=t; } requestAnimationFrame(r); })(l); }
 })();
+
+/* Statement: More reveals two lines between the quote and the nav */
+(function(){ const b=document.getElementById('tr-more'), t=document.getElementById('tr-moretext'); if(!b||!t) return;
+  b.addEventListener('click',()=>{ const o=!t.classList.contains('on'); t.classList.toggle('on',o); b.setAttribute('aria-expanded',o); b.textContent=o?'Less':'More'; }); })();
 </script>
 </body>
 </html>
