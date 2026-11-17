@@ -147,6 +147,28 @@ body.on-statement #cursor{background:#F5F5F5;mix-blend-mode:difference;}
 body.on-statement #cursor-ring{border:1px solid rgba(245,245,245,.7);mix-blend-mode:difference;}
 body.on-statement.tr-held #cursor-ring{width:54px;height:54px;}
 @media(max-width:600px){.tr-tl{left:14px;top:12px;}.tr-tr{right:14px;top:12px;}.tr-hud{font-size:8px;}.tr-bl{left:14px;bottom:126px;}.tr-ctl{right:14px;bottom:84px;}.tr-meter{width:40px;}}
+/* ONE SCREEN — no scrolling on Statement while the surface runs; a caption stays and the second paragraph surfaces on break */
+#p-statement.gl{overflow:hidden;}
+#p-statement.gl .tr-copy{display:none;}
+#p-statement.gl .tr-stage{touch-action:none;}
+.tr-cap{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:124px;width:min(660px,calc(100% - 44px));display:none;color:#F5F5F5;mix-blend-mode:difference;pointer-events:none;}
+#p-statement.gl .tr-cap{display:block;}
+.tr-cap p{margin:0;}
+.tr-cap .c1{font-size:clamp(14px,1.5vw,19px);font-weight:700;line-height:1.42;letter-spacing:-.01em;}
+.tr-cap .c2{margin-top:.9em;font-size:clamp(12.5px,1.1vw,15px);font-weight:500;line-height:1.65;opacity:var(--r2,0);}
+@media(max-width:600px){.tr-bl{bottom:128px;}.tr-ctl{bottom:88px;}.tr-cap{bottom:152px;}}
+/* HERO — the lockup is drawn into the water; the symbols stay live HTML */
+#hero.gl #hero-video,#hero.gl #c{display:none;}
+#c-hero{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:none;touch-action:none;}
+#hero.gl #c-hero{display:block;}
+#hero.gl{touch-action:none;}
+#hero.tr-lock .lockup-mark,#hero.tr-lock .lockup-text-wrap{opacity:0!important;}
+#hero .tr-hhint{display:none;}
+#hero.gl .tr-hhint{display:block;left:50%;bottom:26px;transform:translateX(-50%);white-space:nowrap;}
+body:not(.in-page) #cursor{background:#F5F5F5;mix-blend-mode:difference;}
+body:not(.in-page) #cursor-ring{border-color:rgba(245,245,245,.7)!important;mix-blend-mode:difference;}
+body:not(.in-page).tr-held #cursor-ring{width:54px;height:54px;}
+body.on-statement #cursor-ring{border-color:rgba(245,245,245,.7)!important;}
 .stmt-copy{position:relative;z-index:2;max-width:66ch;margin:clamp(20px,3vh,36px) auto 0;text-align:left;}
 .stmt-copy p{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease;}
 .stmt-copy p.on{opacity:1;transform:none;}
@@ -346,6 +368,8 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
     <source src="REPLACE_WITH_YOUR_VIDEO_URL.mp4" type="video/mp4">
   </video>
   <canvas id="c"></canvas>
+  <canvas id="c-hero" aria-hidden="true"></canvas>
+  <div class="tr-hud tr-hhint" id="tr-hhint">Touch the surface · Hold to tremor</div>
 
   <div id="lock">
     <svg class="lockup-mark" id="hmark" viewBox="0 0 1103 442" role="img" aria-label="Pond mark"><use href="#g-mark"/></svg>
@@ -390,7 +414,8 @@ body.cinema #cursor{background:#F5F5F5;} body.cinema #cursor-ring{border-color:r
     <div class="tr-hud tr-tl">Pond — Tremor Study 01<br>Surface / Beneath</div>
     <div class="tr-hud tr-tr">Tremor <span id="tr-val">0.00</span><span class="tr-meter"><i id="tr-bar"></i></span><br><span id="tr-state">Surface calm</span></div>
     <div class="tr-hud tr-bl" id="tr-hint">Touch the surface · Hold to tremor</div>
-    <div class="tr-ctl"><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button></div>
+    <div class="tr-cap" id="tr-cap"><p class="c1"></p><p class="c2"></p></div>
+    <div class="tr-ctl"><button class="tr-btn" id="tr-read" aria-pressed="false">Read</button><button class="tr-btn" id="tr-sound" aria-pressed="false">Sound off</button><button class="tr-btn" id="tr-calm">Calm</button></div>
   </div>
   <section class="section tr-copy">
     <div class="sec-inner" id="i-statement">
@@ -772,13 +797,14 @@ const ioReveal = new IntersectionObserver((es) => {
 }, {threshold:0.12});
 document.querySelectorAll('.st,.pond-stage,.wk-tile,.stmt-copy p').forEach(el => ioReveal.observe(el));
 
-/* TREMOR SURFACE — Statement opens as a full-screen water surface (Tremor Study 01). "Comfort is obedience." sits on it;
-   stirring or holding breaks it open to "Trust the tremor." and the living cells beneath, and it seals back when left alone.
-   The written statement follows below. Runs only while the surface is on screen. Without WebGL 2 the HTML quote shows instead. */
-(function(){
+/* TREMOR SURFACE — one water engine, two stages: the hero (the Pond lockup is the surface) and Statement (full screen).
+   Stirring or holding breaks the surface open to "Trust the tremor." and the living cells beneath; it seals back when left alone.
+   Runs only while its stage is open and on screen. Without WebGL 2 each page keeps its normal HTML. */
+function makeTremor(cfg){
 'use strict';
-const stage = document.getElementById('pond-echo'), cv = document.getElementById('c-stmt'), page = document.getElementById('p-statement');
-if (!stage || !cv || !page) return;
+const stage = cfg.stage, cv = cfg.canvas, page = cfg.host, ui = cfg.ui || {};
+const dummy = () => document.createElement('span');
+if (!stage || !cv || !page) return false;
 const gl = cv.getContext('webgl2', {antialias:false, alpha:false, premultipliedAlpha:false});
 if (!gl || !(gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float'))) return;
 
@@ -887,6 +913,7 @@ gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_
 gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
 
 let W=0,H=0,SW=0,SH=0, asp=[1,1], sim=[], cur=0, texA=null, texB=null, ready=false;
+let prepared = !cfg.prep;
 function mkSim(){ const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA16F,SW,SH,0,gl.RGBA,gl.HALF_FLOAT,null);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
@@ -896,14 +923,10 @@ function mkSim(){ const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
   gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT);
   return {t,f}; }
 
-const FONT = '"Archivo Black","Pretendard","Arial Black",Arial,sans-serif';
-const LINES_A = ['COMFORT IS','OBEDIENCE.'], LINES_B = ['TRUST THE','TREMOR.'];
-function textTex(lines, size, tw, th){
+function textTex(draw, tw, th){
   const c = document.createElement('canvas'); c.width = tw; c.height = th;
-  const x = c.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,tw,th);
-  x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='alphabetic'; x.font = `900 ${size}px ${FONT}`;
-  const lh = size*.9, top = th/2 - (lines.length*lh)/2 + size*.8;
-  lines.forEach((l,i) => x.fillText(l, tw/2, top + i*lh));
+  const x = c.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,tw,th); x.fillStyle='#fff';
+  draw(x, tw, th, tw/stage.clientWidth);
   const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,t);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,gl.RED,gl.UNSIGNED_BYTE,c);
@@ -915,15 +938,13 @@ function textTex(lines, size, tw, th){
 function buildText(){
   const max = Math.min(gl.getParameter(gl.MAX_TEXTURE_SIZE), 2560);
   const k = Math.min(1, max/Math.max(W,H)), tw = Math.round(W*k), th = Math.round(H*k);
-  const m = document.createElement('canvas').getContext('2d'); m.font = `900 100px ${FONT}`;
-  const widest = Math.max(...LINES_A.concat(LINES_B).map(l => m.measureText(l).width));
-  const size = Math.min((tw * (tw < th ? .88 : .74)) / widest * 100, th*.5/1.8);
   if (texA) gl.deleteTexture(texA); if (texB) gl.deleteTexture(texB);
-  texA = textTex(LINES_A,size,tw,th); texB = textTex(LINES_B,size,tw,th); }
+  texA = textTex(cfg.drawA, tw, th); texB = textTex(cfg.drawB, tw, th);
+  if (cfg.afterText) cfg.afterText(); }
 
 function resize(){
   const cw = stage.clientWidth, ch = stage.clientHeight;
-  if (cw < 2 || ch < 2) return;
+  if (cw < 2 || ch < 2 || !prepared) return;
   const dpr = Math.min(window.devicePixelRatio||1, 2);
   const nw = Math.round(cw*dpr), nh = Math.round(ch*dpr);
   if (ready && nw === W && nh === H) return;
@@ -937,13 +958,13 @@ function resize(){
 }
 if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(stage);
 addEventListener('resize', resize);
+if (cfg.prep) Promise.resolve().then(cfg.prep).then(() => { prepared = true; if (ready) buildText(); else resize(); }, () => { prepared = true; });
 if (document.fonts && document.fonts.load) document.fonts.load('900 100px "Archivo Black"').then(() => { if (ready) buildText(); }, () => {});
 
 /* input */
 const ptr = {x:.5,y:.5,px:.5,py:.5,down:false,moved:false,in:false,downAt:0};
 const drops = []; let lastTouch = -1e9, activity = 0, touched = false;
-const hint = document.getElementById('tr-hint'), valEl = document.getElementById('tr-val'),
-      barEl = document.getElementById('tr-bar'), stateEl = document.getElementById('tr-state');
+const hint = ui.hint || dummy(), valEl = ui.val || dummy(), barEl = ui.bar || dummy(), stateEl = ui.state || dummy();
 function setPtr(ev){ const r = cv.getBoundingClientRect(); ptr.x = (ev.clientX-r.left)/r.width; ptr.y = 1 - (ev.clientY-r.top)/r.height; }
 function firstTouch(){ if (touched) return; touched = true; if (hint) hint.style.opacity = 0; }
 stage.addEventListener('pointerdown', ev => { if (ev.target.closest('.tr-ctl')) return; setPtr(ev); ptr.px=ptr.x; ptr.py=ptr.y; ptr.down = true; ptr.in = true; ptr.downAt = performance.now();
@@ -953,13 +974,13 @@ const up = () => { ptr.down = false; document.body.classList.remove('tr-held'); 
 addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
 stage.addEventListener('pointerleave', () => { ptr.in = false; });
 
-document.getElementById('tr-calm').addEventListener('click', () => {
+(ui.calm || dummy()).addEventListener('click', () => {
   sim.forEach(x => { gl.bindFramebuffer(gl.FRAMEBUFFER,x.f); gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); });
   activity = 0; drops.length = 0; });
 
 /* sound — off until asked: a low drone that shakes harder as the tremor rises */
 let ac=null, master=null, lp=null, trem=null, tremGain=null, soundOn=false;
-const bSound = document.getElementById('tr-sound');
+const bSound = ui.sound || dummy();
 bSound.addEventListener('click', async () => {
   try {
     if (!ac) {
@@ -989,7 +1010,7 @@ function blip(){ if (!soundOn || !ac) return; try {
 let onScreen = false;
 new IntersectionObserver(es => es.forEach(e => { onScreen = e.isIntersecting; }), {threshold:0}).observe(stage);
 const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-let nextAuto = 0, hudTick = 0;
+let nextAuto = 0, hudTick = 0, linger = 0;
 
 function step(A,B,str,rad){
   const src = sim[cur], dst = sim[1-cur];
@@ -1003,7 +1024,7 @@ function step(A,B,str,rad){
 }
 function frame(now){
   requestAnimationFrame(frame);
-  if (current !== 'statement' || !onScreen){ if (soundOn && master) master.gain.setTargetAtTime(0, ac.currentTime, .1); return; }
+  if (!cfg.active() || !onScreen){ if (soundOn && master) master.gain.setTargetAtTime(0, ac.currentTime, .1); return; }
   if (!ready) { resize(); if (!ready) return; }
   const t = now/1000;
   let A=[0,0],B=[0,0],str=0,rad=.03;
@@ -1031,7 +1052,7 @@ function frame(now){
   gl.uniform2f(u.uPx,1/SW,1/SH); gl.uniform2f(u.uAsp,asp[0],asp[1]); gl.uniform1f(u.uT,t);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
 
-  activity *= .972;
+  activity *= .972; linger = Math.max(linger*.996, activity > .45 ? 1 : 0); if (cfg.onFrame) cfg.onFrame(activity, linger);
   if (soundOn && ac){ const c = ac.currentTime;
     master.gain.setTargetAtTime(.035 + activity*.3, c, .12);
     lp.frequency.setTargetAtTime(160 + activity*activity*2200, c, .1);
@@ -1042,7 +1063,78 @@ function frame(now){
     stateEl.textContent = activity>.55 ? 'Beneath exposed' : activity>.08 ? 'Surface breaking' : 'Surface calm'; }
 }
 requestAnimationFrame(frame);
-cv.addEventListener('webglcontextlost', e => { e.preventDefault(); page.classList.remove('gl'); });
+cv.addEventListener('webglcontextlost', e => { e.preventDefault(); page.classList.remove('gl'); if (cfg.onLost) cfg.onLost(); });
+return true;
+}
+
+const TR_FONT = '"Archivo Black","Pretendard","Arial Black",Arial,sans-serif';
+const trMeasure = document.createElement('canvas').getContext('2d');
+
+/* STATEMENT — full screen, one screen, no scrolling. A caption stays; the second paragraph surfaces when the water breaks. */
+(function(){
+  const page = document.getElementById('p-statement'), stage = document.getElementById('pond-echo'), cap = document.getElementById('tr-cap');
+  if (!page || !stage || !cap) return;
+  const ps = [...page.querySelectorAll('.stmt-copy p')].map(p => p.textContent.trim().replace(/\s+/g,' '));
+  cap.querySelector('.c1').textContent = ps[0] || ''; cap.querySelector('.c2').textContent = ps[1] || '';
+  const QA = ['COMFORT IS','OBEDIENCE.'], QB = ['TRUST THE','TREMOR.'];
+  function layout(tw, th, css){
+    trMeasure.font = `900 100px ${TR_FONT}`;
+    const widest = Math.max(...QA.concat(QB).map(l => trMeasure.measureText(l).width));
+    const capTop = (cap.getBoundingClientRect().top - stage.getBoundingClientRect().top) * css;
+    const room = capTop > 0 ? capTop : th;
+    return {cy: Math.min(th/2, room/2), size: Math.min((tw*(tw<th?.88:.74))/widest*100, th*.5/1.8, room*.8/1.8)};
+  }
+  const draw = lines => (x, tw, th, css) => {
+    const {cy,size} = layout(tw, th, css);
+    x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.font = `900 ${size}px ${TR_FONT}`;
+    const lh = size*.9, top = cy - (lines.length*lh)/2 + size*.8;
+    lines.forEach((l,i) => x.fillText(l, tw/2, top + i*lh));
+  };
+  let pinned = false; const bRead = document.getElementById('tr-read');
+  bRead.addEventListener('click', () => { pinned = !pinned; bRead.setAttribute('aria-pressed', pinned); bRead.textContent = pinned ? 'Hide' : 'Read'; });
+  makeTremor({
+    stage, canvas: document.getElementById('c-stmt'), host: page, active: () => current === 'statement',
+    drawA: draw(QA), drawB: draw(QB),
+    ui: {val: document.getElementById('tr-val'), bar: document.getElementById('tr-bar'), state: document.getElementById('tr-state'),
+         hint: document.getElementById('tr-hint'), sound: document.getElementById('tr-sound'), calm: document.getElementById('tr-calm')},
+    onFrame: (act, lin) => cap.style.setProperty('--r2', (pinned ? 1 : Math.min(1, Math.max(0, (lin - .15)/.5))).toFixed(3))
+  });
+})();
+
+/* HERO — the lockup is the surface. The mark and POND are drawn into the water; the four symbols stay plain buttons on top. */
+(function(){
+  const hero = document.getElementById('hero'), cv = document.getElementById('c-hero');
+  if (!hero || !cv) return;
+  const H = {mark:null, word:null};
+  const raster = id => new Promise((res, rej) => {
+    const sym = document.getElementById(id); if (!sym) return rej();
+    const vb = sym.getAttribute('viewBox').trim().split(/\s+/).map(Number);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.join(' ')}" width="${vb[2]*2}" height="${vb[3]*2}">${sym.innerHTML.replace(/#060D0D/gi,'#fff')}</svg>`;
+    const im = new Image(); im.onload = () => res(im); im.onerror = rej;
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+  const R = el => { const a = hero.getBoundingClientRect(), r = el.getBoundingClientRect(); return {x:r.left-a.left, y:r.top-a.top, w:r.width, h:r.height}; };
+  const drawA = (x, tw, th, css) => {
+    if (!H.mark || !H.word) return;
+    [['hmark', H.mark], ['hwm', H.word]].forEach(([id, im]) => { const r = R(document.getElementById(id)); x.drawImage(im, r.x*css, r.y*css, r.w*css, r.h*css); });
+  };
+  const drawB = (x, tw, th, css) => {
+    const a = R(document.getElementById('hmark')), b = R(document.getElementById('lock-r'));
+    const gw = (b.x + b.w - a.x) * css, cx = (a.x*css + gw/2), cy = ((a.y + a.h/2 + b.y + b.h/2)/2) * css;
+    const L = ['TRUST THE','TREMOR.']; trMeasure.font = `900 100px ${TR_FONT}`;
+    const widest = Math.max(...L.map(l => trMeasure.measureText(l).width));
+    const size = Math.min(gw*.72/widest*100, a.h*css*.9/1.8);
+    x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.font = `900 ${size}px ${TR_FONT}`;
+    const lh = size*.9, top = cy - (L.length*lh)/2 + size*.8;
+    L.forEach((l,i) => x.fillText(l, cx, top + i*lh));
+  };
+  makeTremor({
+    stage: hero, canvas: cv, host: hero, active: () => current === '',
+    prep: () => Promise.all([raster('g-mark'), raster('g-word')]).then(([m, w]) => { H.mark = m; H.word = w; }),
+    drawA, drawB, ui: {hint: document.getElementById('tr-hhint')},
+    afterText: () => { if (H.mark && H.word) hero.classList.add('tr-lock'); },
+    onLost: () => hero.classList.remove('tr-lock')
+  });
 })();
 /* ════ INIT ════ */
 addEventListener('resize', measure);
