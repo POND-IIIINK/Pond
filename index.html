@@ -129,7 +129,7 @@ svg.sym-ic{display:block;aspect-ratio:90/98;width:auto;overflow:visible;}
 #p-statement.on .tr-stage canvas{opacity:1;}
 .tr-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 6vw;}
 #p-statement.gl .tr-fallback{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);pointer-events:none;}
-.tr-hud{position:absolute;z-index:3;display:none;font-size:9px;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:#F5F5F5;mix-blend-mode:difference;pointer-events:none;transition:opacity 1.2s ease;}
+.tr-hud{position:absolute;z-index:3;display:none;font-size:9px;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;font-weight:400;color:#060D0D;pointer-events:none;transition:opacity 1.2s ease;}
 #p-statement.gl .tr-hud{display:block;}
 .tr-tl{left:22px;top:18px;}
 .tr-tr{right:22px;top:18px;text-align:right;font-variant-numeric:tabular-nums;}
@@ -294,7 +294,7 @@ body.in-page:not(.on-statement) #pgTL,body.show-clock:not(.on-statement) #pgTR{d
 body.in-page .hud{display:none;}
 @media(max-width:600px){.pg-tl{left:14px;top:12px;}.pg-tr{right:14px;top:12px;}.pg-hud{font-size:8px;}}
 #fpsx{position:fixed;left:8px;bottom:8px;z-index:3000;font:11px/1 monospace;background:#060D0D;color:#F5F5F5;padding:4px 6px;pointer-events:none;}
-.tr-more{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:clamp(104px,14vh,140px);width:min(66ch,calc(100% - 44px));display:none;opacity:0;pointer-events:none;transition:opacity .6s ease;color:#F5F5F5;mix-blend-mode:difference;font-size:clamp(14px,1.2vw,17px);font-weight:500;line-height:1.75;}
+.tr-more{position:absolute;z-index:3;left:50%;transform:translateX(-50%);bottom:clamp(104px,14vh,140px);width:min(66ch,calc(100% - 44px));display:none;opacity:0;pointer-events:none;transition:opacity .6s ease;color:rgba(6,13,13,0.86);font-size:clamp(14px,1.2vw,17px);font-weight:500;line-height:1.75;}
 #p-statement.gl .tr-more{display:block;}
 .tr-more.on{opacity:1;}
 .tr-more p{margin:0;}.tr-more p+p{margin-top:1.1em;}
