@@ -114,7 +114,7 @@ svg.sym-ic{display:block;aspect-ratio:90/98;width:auto;overflow:visible;}
 .stmt-q .trem{font-weight:900;}   /* still, just a touch heavier than the line */
 .stmt-label{font-size:8px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(6,13,13,0.4);padding-bottom:10px;}
 .mm{width:100%;margin:clamp(50px,10vh,110px) auto 0;display:flex;flex-direction:column;align-items:center;text-align:center;}
-.mm-panel{position:relative;width:100%;height:min(calc(100vh - 260px),900px);min-height:420px;margin-top:clamp(24px,4vh,44px);border:2px solid #060D0D;background:#F5F5F5;touch-action:pan-y;}
+.mm-panel{position:relative;width:100%;height:min(calc(100vh - 300px),900px);min-height:420px;margin-top:clamp(24px,4vh,44px);border:2px solid #060D0D;background:#F5F5F5;touch-action:pan-y;}
 .mm-panel canvas{position:absolute;inset:0;width:100%;height:100%;}
 .mm-pn{position:absolute;right:12px;top:10px;font-size:10px;letter-spacing:.2em;opacity:.6;}
 .mm-pl{position:absolute;right:12px;top:24px;font-weight:800;text-transform:uppercase;font-size:13px;background:#F5F5F5;padding:4px 6px 3px;margin-right:-6px;}
@@ -134,8 +134,8 @@ svg.sym-ic{display:block;aspect-ratio:90/98;width:auto;overflow:visible;}
 .tr-tl{left:22px;top:18px;}
 .tr-tr{right:22px;top:18px;text-align:right;font-variant-numeric:tabular-nums;}
 .tr-bl{left:22px;bottom:18px;}
-.tr-meter{display:inline-block;width:64px;height:1px;background:rgba(245,245,245,.3);vertical-align:middle;margin-left:8px;position:relative;}
-.tr-meter i{position:absolute;left:0;top:-1px;height:3px;width:0;background:#F5F5F5;}
+.tr-meter{display:inline-block;width:64px;height:1px;background:rgba(6,13,13,.3);vertical-align:middle;margin-left:8px;position:relative;}
+.tr-meter i{position:absolute;left:0;top:-1px;height:3px;width:0;background:#060D0D;}
 .tr-ctl{position:absolute;z-index:3;right:22px;bottom:14px;display:none;gap:8px;mix-blend-mode:difference;}
 #p-statement.gl .tr-ctl{display:flex;}
 .tr-btn{font:inherit;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#F5F5F5;background:none;border:1px solid rgba(245,245,245,.55);padding:7px 11px 6px;cursor:none;}
@@ -271,7 +271,7 @@ body.on-statement.tr-held #cursor-ring{width:54px;height:54px;}
 #sym-nav-fixed::before{content:'';position:absolute;z-index:-1;left:10px;right:10px;top:2px;height:46%;border-radius:999px 999px 60% 60% / 999px 999px 100% 100%;background:linear-gradient(to bottom,rgba(255,255,255,.75),rgba(255,255,255,0));pointer-events:none;}
 #sym-nav-fixed::after{content:'';position:absolute;z-index:-1;inset:0;border-radius:inherit;background:radial-gradient(120% 140% at 50% 120%,rgba(255,255,255,.35),rgba(255,255,255,0) 55%);pointer-events:none;}
 body.in-page #sym-nav-fixed{opacity:1;pointer-events:all;transform:translate(-50%,0);}
-.snf-btn{background:none;border:none;cursor:none;opacity:0.4;transition:opacity .2s;padding:7px;position:relative;}
+body.in-page .snf-btn{background:none;border:none;cursor:none;opacity:0.4;transition:opacity .2s;padding:7px;position:relative;}
 .snf-btn:hover,.snf-btn.active{opacity:1;}
 .snf-btn svg{height:clamp(24px,2.1vw,32px);width:auto;display:block;transition:transform .2s ease;}
 .snf-btn:hover svg{transform:scale(1.06);}
@@ -301,6 +301,14 @@ body.in-page .hud{display:none;}
 @media(max-width:600px){.tr-more{bottom:176px;}}
 .wk-lead{max-width:66ch;margin:6px auto 30px;text-align:center;font-size:clamp(17px,1.7vw,23px);font-weight:700;line-height:1.42;letter-spacing:-0.01em;color:#060D0D;}
 #p-statement{touch-action:none;overscroll-behavior:none;overflow:hidden;}
+/* WORKS — the tile is the page: no box, edge to edge */
+#p-works{top:0;bottom:0;padding:0;overflow:hidden;-webkit-mask-image:none;mask-image:none;}
+#p-works .section{padding:0;min-height:100%;display:block;}
+#p-works .sec-inner{max-width:none;width:100%;height:100%;}
+#p-works .mm{position:absolute;inset:0;margin:0;display:block;}
+#p-works .mm-panel{position:absolute;inset:96px 0 0 0;width:100%;height:auto;min-height:0;margin:0;border:0;background:#F5F5F5;}
+#p-works .mm-pl{display:none;}
+#p-works .mm .stmt-label{position:absolute;z-index:3;left:0;right:0;top:64px;padding:0;text-align:center;pointer-events:none;}
 </style>
 </head>
 <body>
@@ -382,13 +390,8 @@ body.in-page .hud{display:none;}
     <div class="sec-inner wk-inner">
       <div class="mm">
         <div class="st stmt-label">What I make</div>
-        <p class="wk-lead">Pond builds site-responsive audio-visual environments for projection: 3D animation, bold typographic commands, music, and sound that reacts to the room.</p>
         <div class="mm-panel" id="mm-panel"><canvas id="mm-cv" aria-hidden="true"></canvas><span class="mm-pn">01</span><span class="mm-pl">Large-scale projection</span>
           <h2 class="mm-sr">Projections that take over the wall. Mixed media, built to send messages.</h2></div>
-      </div>
-      <div class="wk-sec">
-        <div class="st stmt-label">Works</div>
-        <div class="wk-grid" id="wk-grid"></div>
       </div>
     </div>
   </section>
@@ -608,17 +611,7 @@ function drawHermeticIcon(gctx, x, y, r, type, alpha, hov, tOverride) {
 /* ════════════════════════════════════════
    WORKS — 4 x 4 grid. yt = YouTube video ID
 ════════════════════════════════════════ */
-const WORKS = [
-  {t:'Mechanical Intimacy : World’s Last Tree', m:'Anamorphic LED · 2026',         yt:'-jk6QBfosRQ'},
-  {t:'Garden of Luminous Words',                m:'Media Art · Museum HEI · 2026', yt:'RtRPXETrt9c'},
-  {t:'Ready, Jack Pot',                         m:'Projection Mapping · 2026',     yt:'biWV_s9uC5Q'},
-  {t:'VVVVRR',                                  m:'Music Video · 2026',            yt:'1KurujDB_-s'},
-  {t:'Reflection',                              m:'AI Artwork · 2026',             yt:''},
-  {t:'Demo Festival Netherlands',               m:'Audio Visuals · 2026',          yt:''},
-  {t:'VJ Content and Light',                    m:'Tomato Ketchup Picnic · 2026',  yt:''},
-  {t:'VJ Audio-Visual Project',                 m:'TouchDesigner · 2026',          yt:''},
-  {t:'DJ BOY',                                  m:'Character · in progress',       yt:''},
-];
+const WORKS = [];
 const cinemaOverlay = document.getElementById('cinema-overlay');
 const cinemaStage   = document.getElementById('cinema-stage');
 let cinemaOpen = false;
@@ -635,46 +628,33 @@ addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (cinemaOpen) closeCinema(); else if (current) go('');
 });
-const wkGrid = document.getElementById('wk-grid');
-for (let i = 0; i < 16; i++) {
-  const w = WORKS[i], d = document.createElement('div');
-  const num = `<span class="wk-num">FRAME — ${String(i+1).padStart(2,'0')}</span>`;
-  d.className = 'wk-tile' + (w ? '' : ' empty');
-  if (w) {
-    d.innerHTML = (w.yt ? `<img src="https://i.ytimg.com/vi/${w.yt}/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">` : '')
-      + num + `<span class="wk-cap"><b>${w.t}</b><i>${w.m}</i></span>`;
-    d.setAttribute('role','button'); d.tabIndex = 0;
-    d.addEventListener('click', () => openWork(w));
-    d.addEventListener('keydown', (e) => { if (e.key === 'Enter') openWork(w); });
-  } else {
-    d.innerHTML = num + '<span class="wk-dash">—</span>';
-  }
-  wkGrid.appendChild(d);
-}
-
 /* WHAT I MAKE — tile 01: eye, rays, moving floor, and the headline projected upright with a fisheye bow (static-in once) */
 (function(){
 const INK='#060D0D', BG='#F5F5F5', TAU=Math.PI*2, tile=document.getElementById('mm-panel'), cv=document.getElementById('mm-cv'); if(!tile) return;
 const reduce=reduceMotion;
 const o={cx:cv.getContext('2d'),w:2,h:2,dpr:1,tm:0,sx:0,sy:0};
 function size(){const r=tile.getBoundingClientRect(); if(!r.width) return; o.dpr=Math.min(2,Math.ceil(devicePixelRatio||1));o.w=r.width;o.h=r.height;cv.width=r.width*o.dpr;cv.height=r.height*o.dpr;}
-size(); addEventListener('resize',size);
-const ROWS=['PROJECTIONS','THATTAKEOVER','THEWALL'], SUB='MIXED MEDIA, BUILT TO SEND MESSAGES.';
-const SW=1600, sheet=document.createElement('canvas'), sc=sheet.getContext('2d');
-let layout=null;
+size(); addEventListener('resize',size); if(window.ResizeObserver) new ResizeObserver(size).observe(tile);
+const ROWS=['PROJECTIONS','THATTAKEOVER','THEWALL'], SUBL='MIXED MEDIA, BUILT TO SEND MESSAGES.', EYE_AFTER=2; let EYE_GAP=.12;
+const SW=1600, PAD=SW*.03, sheet=document.createElement('canvas'), sc=sheet.getContext('2d');
+let layout=null, eyeY=0;
 function buildLayout(){
   const F=s=>'900 '+s+'px Pretendard,Arial,sans-serif'; const rows=[]; let y=0, idx=0;
-  ROWS.forEach(t=>{ sc.font=F(100); const fs=100*SW/sc.measureText(t).width; sc.font=F(fs);
-    const xs=[]; let acc=0; [...t].forEach(ch=>{ const cw=sc.measureText(ch).width; xs.push(acc+cw/2); acc+=cw; });
-    const cap=fs*.74; rows.push({t,fs,xs,y:y+cap,font:F(fs),i0:idx}); idx+=t.length; y+=cap+fs*.1; });
-  const subFs=SW*.032; y+=subFs*1.1; const sub={t:SUB,fs:subFs,y:y+subFs*.75,font:'700 '+subFs+'px Pretendard,Arial,sans-serif'}; y+=subFs*1.3;
-  sheet.width=SW; sheet.height=Math.ceil(y); layout={rows,sub,H:sheet.height,n:idx}; drawSheet();
+  const put=(t,fs,off)=>{ sc.font=F(fs); const xs=[]; let acc=off||0; [...t].forEach(ch=>{ const cw=sc.measureText(ch).width; xs.push(acc+cw/2); acc+=cw; });
+    const cap=fs*.74; rows.push({t,fs,xs,y:y+cap,font:F(fs),i0:idx}); idx+=t.length; y+=cap+fs*.1; };
+  ROWS.forEach(t=>{ sc.font=F(100); const fs=100*(SW-2*PAD)/sc.measureText(t).width; put(t,fs,PAD);
+    if(rows.length===EYE_AFTER){ const g=SW*EYE_GAP; eyeY=y+g/2; y+=g+SW*.02; } });
+  /* the small caption under the headline, as originally set */
+  sc.font='700 100px Pretendard,Arial,sans-serif'; const subFs=100*(SW-2*PAD)/sc.measureText(SUBL).width, fS='700 '+subFs+'px Pretendard,Arial,sans-serif'; y+=subFs*1.1; sc.font=fS; const lw=sc.measureText(SUBL).width;
+  const sx=[]; let ac=(SW-lw)/2; [...SUBL].forEach(ch=>{ const cw=sc.measureText(ch).width; sx.push(ac+cw/2); ac+=cw; });
+  rows.push({t:SUBL,fs:subFs,xs:sx,y:y+subFs*.75,font:fS,i0:idx,plain:true}); idx+=SUBL.length; y+=subFs*1.3;
+  sheet.width=SW; sheet.height=Math.ceil(y); layout={rows,H:sheet.height,n:idx,eyeY}; drawSheet();
 }
 (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(buildLayout); buildLayout();
 function drawSheet(){ const L=layout; sc.setTransform(1,0,0,1,0,0); sc.clearRect(0,0,SW,L.H); sc.fillStyle=INK; sc.textAlign='center'; sc.textBaseline='alphabetic';
   sc.strokeStyle=INK; sc.lineJoin='round';
-  L.rows.forEach(r=>{ sc.font=r.font; sc.lineWidth=r.fs*.035; [...r.t].forEach((ch,j)=>{ sc.fillText(ch,r.xs[j],r.y); sc.strokeText(ch,r.xs[j],r.y); }); });
-  sc.font=L.sub.font; sc.fillText(L.sub.t,SW/2,L.sub.y); }
+  L.rows.forEach(r=>{ sc.font=r.font; sc.lineWidth=r.fs*.035; [...r.t].forEach((ch,j)=>{ sc.fillText(ch,r.xs[j],r.y); if(!r.plain) sc.strokeText(ch,r.xs[j],r.y); }); });
+}
 const st=document.createElement('canvas'), stc=st.getContext('2d'), nz=document.createElement('canvas'), nzc=nz.getContext('2d');
 function staticSheet(amt){ const L=layout; st.width=SW; st.height=L.H; nz.width=180; nz.height=Math.max(8,Math.round(180*L.H/SW));
   const im=nzc.createImageData(nz.width,nz.height), d=im.data;
@@ -685,36 +665,48 @@ function staticSheet(amt){ const L=layout; st.width=SW; st.height=L.H; nz.width=
   return st; }
 let revealAt=null; new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting&&revealAt===null) revealAt=o.tm; }),{threshold:.35}).observe(tile);
 function paintGrand(o){
+  if(!(o.w>8)||!(o.h>8)) return;
   const c=o.cx, w=o.w, h=o.h, t=o.tm; c.setTransform(o.dpr,0,0,o.dpr,0,0); c.clearRect(0,0,w,h);
   c.strokeStyle=INK; c.fillStyle=INK; c.lineJoin='round'; c.lineCap='round';
   const ws=Math.min(w,h*.75), px=o.sx, py=o.sy, cx=w/2, vx=cx-px*ws*.05, ex=cx+px*ws*.015;
-  const R=Math.min(h*.13,ws*.19), ey=h*.17, hy=h*.62, lw=Math.max(1.3,ws*.0026);
-  c.lineWidth=1; c.globalAlpha=.35; c.strokeRect(14-px*8,14-py*6,w-28,h-28);
-  const sp=ws*.07, nI=Math.ceil((w/2)/sp)+4;
+  const R=Math.min(h*.13,ws*.19), hy=h*.68, lw=Math.max(1.3,ws*.0026);
+  const ey=h*.17, ER=R, TS=1; let Wt=0, Ht=0, yBot=hy+(h-hy)*.62;
+  if(layout){ Wt=Math.min(w*(w/h<.8?.92:.62), ws*1.12)*SW/(SW-2*PAD);
+    const g=1.15*R/Wt; if(Math.abs(g-EYE_GAP)>.004){ EYE_GAP=g; buildLayout(); }
+    const L=layout; Wt=Math.min(Wt,(ey-42)/(L.eyeY/SW*TS)); Ht=Wt*L.H/SW*TS;
+    const g2=1.15*R/Wt; if(Math.abs(g2-EYE_GAP)>.004){ EYE_GAP=g2; buildLayout(); Ht=Wt*layout.H/SW*TS; }
+    yBot=ey-layout.eyeY/layout.H*Ht+Ht; }
+  const sp=ws*.026, nI=Math.ceil((w/2)/sp)+4;
+  const GROUND=false;   /* test: rays + perspective grid off */
+  if(GROUND){
   c.globalAlpha=.26; for(let i=-nI;i<=nI;i++){ c.beginPath(); c.moveTo(vx,hy); c.lineTo(cx+i*sp,h); c.stroke(); }
-  const ph=(t*.12)%1; for(let k=0;k<9;k++){ const s=Math.pow((k+ph)/9,2), y=hy+(h-hy)*s; c.globalAlpha=.1+.32*Math.sqrt(s); c.beginPath(); c.moveTo(0,y); c.lineTo(w,y); c.stroke(); }
+  const ph=(t*.12)%1; for(let k=0;k<34;k++){ const s=Math.pow((k+ph)/34,3.6), y=hy+(h-hy)*s; c.globalAlpha=.06+.36*Math.pow(s,.4); c.beginPath(); c.moveTo(0,y); c.lineTo(w,y); c.stroke(); }
+  const wr=Math.min(w,h*.5);   /* ray landing spread: its own, tighter limit */
   const ray=(x0,y0,x1,y1,f,p)=>{ c.lineWidth=lw; c.globalAlpha=.3+.5*Math.max(0,Math.sin(t*1.3-p*3+f*2)); c.beginPath(); c.moveTo(x0,y0); c.lineTo(x1,y1); c.stroke();
     const q0=((t*.22+p*.7+f*.37)%1), q1=Math.min(1,q0+.08); c.globalAlpha=.95; c.lineWidth=lw*2; c.beginPath(); c.moveTo(x0+(x1-x0)*q0,y0+(y1-y0)*q0); c.lineTo(x0+(x1-x0)*q1,y0+(y1-y0)*q1); c.stroke(); };
-  for(let i=0;i<15;i++){ const f=i/14; ray(ex+(f-.5)*R*.3, ey+R*.05, cx+(f-.5)*ws*.14, hy, f, 0); }
-  for(const sd of [-1,1]) for(let i=0;i<11;i++){ const f=i/10; ray(ex+sd*(R*.22+f*R*.3), ey, cx+sd*(ws*.2+f*ws*.26), hy*(.86+f*.1), f, .5); }
+  for(let i=0;i<15;i++){ const f=i/14; ray(ex+(f-.5)*R*.3, ey+R*.05, cx+(f-.5)*wr*.14, hy, f, 0); }
+  for(const sd of [-1,1]) for(let i=0;i<11;i++){ const f=i/10; ray(ex+sd*(R*.22+f*R*.3), ey, cx+sd*(wr*.2+f*wr*.26), hy*(.86+f*.1), f, .5); }
   c.globalAlpha=1; c.lineWidth=lw*1.3; c.beginPath(); c.arc(cx,hy-ws*.012,ws*.016,0,TAU); c.stroke(); c.beginPath(); c.arc(cx,hy-ws*.012,ws*.004,0,TAU); c.fill();
+  }
   if(layout){
-    const L=layout, Wt=Math.min(w*(w/h<.8?.92:.62), ws*1.12), Ht=Wt*L.H/SW, yBot=hy+(h-hy)*.62;
+    const L=layout;
     const p=reduce?1:(revealAt===null?0:Math.min(1,(t-revealAt)/1.6)), ez=1-Math.pow(1-p,3);
     const F=1.7*ez, half=F/2, sinH=Math.sin(half), cosH=Math.cos(half), yMid=yBot-Ht/2+(1-ez)*Ht*.08;
     const map=u=>{ if(F<.02) return {x:cx+(u-.5)*Wt, k:1}; const th=(u-.5)*F; return {x:cx+(Wt/2)*Math.sin(th)/sinH, k:.7+.3*(Math.cos(th)-cosH)/(1-cosH)}; };
     const cols=Math.min(240, Wt/3|0);
     const ps=reduce?1:(revealAt===null?0:Math.min(1,(t-revealAt)/1.25));
     const draw=(img,alpha,jy)=>{ c.globalAlpha=alpha; for(let k=0;k<cols;k++){ const u0=k/cols, u1=(k+1)/cols, m0=map(u0), m1=map(u1), hh=Ht*(m0.k+m1.k)/2;
-      c.drawImage(img,u0*SW,0,(u1-u0)*SW+.5,L.H, m0.x, yMid-hh/2+jy, (m1.x-m0.x)+.8, hh); } };
+      const ye=L.eyeY, fe=ye/L.H, dS=R*.1, sw=(u1-u0)*SW+.5, dw=(m1.x-m0.x)+.8, y0=yMid-hh/2+jy;
+      c.drawImage(img,u0*SW,0,sw,ye, m0.x, y0+dS, dw, hh*fe);
+      c.drawImage(img,u0*SW,ye,sw,L.H-ye, m0.x, y0+hh*fe-dS, dw, hh*(1-fe)); } };
     if(ps<1 && revealAt!==null){ const amt=1-ps; draw(staticSheet(amt), Math.min(1,ez*1.4)*(ps<.75?1:(1-ps)/.25), (Math.random()-.5)*Ht*.03*amt);
       if(ps>.6) draw(sheet,(ps-.6)/.4,0); }
     else if(ps>=1) draw(sheet,1,0);
     c.globalAlpha=1;
   }
-  c.globalAlpha=1; c.save(); c.translate(ex,ey);
-  c.beginPath(); c.moveTo(-R,0); c.quadraticCurveTo(0,-R*.85,R,0); c.quadraticCurveTo(0,R*.85,-R,0); c.closePath(); c.fillStyle=BG; c.fill(); c.lineWidth=Math.max(1.6,R*.035); c.stroke();
-  const ix=px*R*.22+Math.sin(t*.6)*R*.04, iy=py*R*.12; c.beginPath(); c.arc(ix,iy,R*.3,0,TAU); c.stroke(); c.fillStyle=INK; c.beginPath(); c.arc(ix,iy,R*.11,0,TAU); c.fill(); c.restore();
+  c.globalAlpha=1; c.save(); c.translate(ex,ey); const Rr=ER;
+  c.beginPath(); c.moveTo(-Rr,0); c.quadraticCurveTo(0,-Rr*.85,Rr,0); c.quadraticCurveTo(0,Rr*.85,-Rr,0); c.closePath(); c.fillStyle=BG; c.fill(); c.lineWidth=Math.max(1.6,Rr*.035); c.stroke();
+  const ix=px*Rr*.22+Math.sin(t*.6)*Rr*.04, iy=py*Rr*.12; c.beginPath(); c.arc(ix,iy,Rr*.3,0,TAU); c.stroke(); c.fillStyle=INK; c.beginPath(); c.arc(ix,iy,Rr*.11,0,TAU); c.fill(); c.restore();
 }
 let tx=0,ty=0;
 tile.addEventListener('pointermove',e=>{const r=tile.getBoundingClientRect(); tx=((e.clientX-r.left)/r.width-.5)*2; ty=((e.clientY-r.top)/r.height-.5)*2;});
@@ -724,6 +716,7 @@ let last=0; requestAnimationFrame(function f(ts){ requestAnimationFrame(f); cons
   if(reduce){ if(o.tm>0) return; o.tm=1; } else o.tm+=dt;
   o.sx+=(tx-o.sx)*.08; o.sy+=(ty-o.sy)*.08; paintGrand(o); });
 })();
+
 
 /* QUOTE — the word gaps in "Trust the tremor." open up so the line spans exactly the width of "Comfort is obedience." */
 (function(){
